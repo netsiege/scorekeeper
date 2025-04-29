@@ -1,0 +1,65 @@
+---
+boxes:
+- name: love
+  ip: 192.168.220.12
+  control:
+    - flag:
+      - path: "/home/jacob/ctrl.txt"
+        value: 2
+      flag:
+      - path: "/root/ctrl.txt"
+        value: 4
+  service:
+    - ftp:
+      - name: project-share
+        path: "/api/README.txt"
+        port: 21
+        regex: "EmotionDetection API"
+
+
+- name: anger
+  ip: 192.168.220.13
+  control:
+    - flag:
+      - path: "/var/www/wordpress/ctrl.txt"
+        value: 1
+      flag:
+      - path: "/home/steven/ctrl.txt"
+        value: 2
+      flag:
+      - path: "/root/ctrl.txt"
+        value: 4
+  service:
+    - web:
+      - name: website
+        path: "/index.php"
+        port: 80
+        regex: "Welcome To Emotions Inc."
+
+teams:
+- name: team1
+  id: 1
+  password: password
+- name: team2
+  id: 2
+  password: password
+
+event:
+  - name: "Netsiege 1"
+    database:
+    - location: localhost
+      username: ns_user
+      password: password
+    administrator:
+    - username: admin
+      password: password
+    checks:
+    - control:
+  # 10 minutes, 2 minute jitter
+      - interval: 600
+        jitter: 120
+      service:
+  # 2 minutes, 30 second jitter
+      - interval: 120
+        jitter: 30
+        points: 1
