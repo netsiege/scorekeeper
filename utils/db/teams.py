@@ -8,7 +8,6 @@ class Team(TypedDict):
     name: str
     password: str
     points: int
-    penalties: int
     token: str
     
 
@@ -35,23 +34,17 @@ def create_teams_from_config(config: dict, db: Database) -> None:
     for team in teams:
         create_team(db, team)
 
-def get_teams(db: Database) -> list[dict]:
-    return list(db.teams.find({}))
-
-def get_team_by_name(db: Database, name: str) -> dict:
-    return db.teams.find_one({"name": name})
+def get_all_teams(db: Database) -> list[dict]:
+    return [Team(team) for team in list(db.teams.find({}))]
 
 def get_team_by_id(db: Database, id: int) -> dict:
-    return db.teams.find_one({"_id": id})
+    return Team(db.teams.find_one({"_id": id}))
 
-def get_team_attribute(db: Database, id: int, attribute: str) -> int | str:
-    # attribute: password, points, penalties, token
-    return db.teams.find_one({"_id": id})[attribute]
 
-def modify_team_attribute(db: Database, id: int, attribute: str, increment: int) -> bool:
+def modify_team_attribute(db: Database, id: int, increment: int) -> bool:
     # attribute: penalties, points
-    cur_value = get_team_attribute(db, id, attribute)
-    new_value = { "$set": { attribute: cur_value + increment } }
+    cur_value = get_team_by_id(id).points
+    new_value = { "$set": { "points": cur_value + increment } }
     db.teams.update_one({"_id": id}, new_value)
 
 def rotate_team_token(db: Database, id: int) -> None:
@@ -60,6 +53,6 @@ def rotate_team_token(db: Database, id: int) -> None:
     db.teams.update_one({"_id": id}, new_value)
 
 def rotate_all_team_tokens(db: Database) -> None:
-    teams = get_teams(db)
+    teams = get_all_teams(db)
     for team in teams:
-        rotate_team_token(db, team["_id"])
+        rotate_team_token(db, team._id)
