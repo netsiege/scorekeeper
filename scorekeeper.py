@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
     teams.modify_team_attribute(database, 1, 10)
     teams.rotate_all_team_tokens(database)
-    boxes.create_boxes_from_config(config_file)
+    boxes.create_boxes_from_config(config_file, database)
     round.save_round(database)
     
-    app.run(host="0.0.0.0", debug=True, port=8000)
+    app.run(host="0.0.0.0", debug=True, port=8000, use_reloader=False)

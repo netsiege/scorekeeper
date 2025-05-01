@@ -4,6 +4,7 @@ from utils.checks.web import WebCheck
 from utils.control import Flag
 from pymongo.database import Database
 
+
 class Box(TypedDict):
     _id: int
     name: str
@@ -35,9 +36,9 @@ def create_box(db: Database, box: Box) -> None:
 def parse_box_config(config: dict) -> list[Box]:
     boxes: list[Box] = []
     for entry in config["boxes"]:
-        control: list[Flag] = [Flag(path=flag["path"], owner=flag["owner"], name=flag["name"], team_id=-1, points=flag["points"]) for flag in entry["control"]]
-        services: list[Check] = [CHECK_MAP[type](**check) for type, check in entry["services"].items()]
-        boxes.append(Box(_id=entry["id"], name=entry["name"], ip=entry["ip"], control=control, services=map(lambda x: x.__dict__, services)))
+        control: list[Flag] = [Flag(path=flag["path"], owner=flag["owner"], name=flag["name"], team_id=-1, points=flag["value"]) for flag in entry["control"]]
+        services: list[Check] = [CHECK_MAP[key](**(value)) for check in entry["service"] for key, value in check.items()]
+        boxes.append(Box(_id=entry["id"], name=entry["name"], ip=entry["ip"], control=control, services=list(map(lambda x: x.__dict__, services))))
     return boxes
 # Create box from config
 def create_boxes_from_config(config: dict, db: Database) -> None:

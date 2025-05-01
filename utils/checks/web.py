@@ -1,7 +1,7 @@
 from utils.checks.check import Check
 
 class WebCheck(Check):
-    def __init__(self, name: str, port: int, regex: str, path: str):
+    def __init__(self, name: str = "web", port: int=80, regex: str="", path: str="/"):
         self.regex = regex
         self.path = path
 
