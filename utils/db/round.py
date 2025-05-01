@@ -1,7 +1,7 @@
 from typing import TypedDict
 from pymongo.database import Database
 from pymongo.collection import Collection
-from utils.db.teams import Team, get_teams
+from utils.db.teams import Team, get_all_teams
 from utils.db.boxes import Box
 from utils.control import Flag
 class SaveTeam(TypedDict):
@@ -30,7 +30,7 @@ def boxes_to_save(data: list[Box]) -> SaveBox:
 
 
 def build_round(db: Database) -> Round:
-    teams: list[Team] = get_teams(db)
+    teams: list[Team] = get_all_teams(db)
     save_teams: list[SaveTeam] = teams_to_save(teams)
     rounds: int = db.rounds.count_documents({})
     return Round(_id=rounds, teams=save_teams, boxes={})

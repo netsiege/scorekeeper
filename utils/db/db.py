@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from pymongo.database import Database
 from pymongo.collection import Collection
-from utils.db.teams import create_teams_from_config, get_team_by_name
+from utils.db.teams import create_teams_from_config, get_team_by_id
 DEBUG = 1
 
 def initialize(connect_url: str, config: dict) -> Database:
@@ -9,7 +9,6 @@ def initialize(connect_url: str, config: dict) -> Database:
     if client is None:
         print(f"Could not connect to the database using url {connect_url}")
         return
-    
     if DEBUG:
         print("Sucessfully connected to the database")
 
@@ -23,7 +22,7 @@ def initialize(connect_url: str, config: dict) -> Database:
     create_teams_from_config(config, db)
 
     if DEBUG:
-        print(f"Successfully created collections: {"".join(db.list_collection_names())}")
+        print(f"Successfully created collections: {''.join(db.list_collection_names())}")
 
     return db
 

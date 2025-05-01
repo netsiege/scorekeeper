@@ -18,7 +18,7 @@ def create_team(db: Database, team: Team) -> None:
     try:
         db.teams.insert_one(team)
         if DEBUG:
-            print(f"Created team: {team["name"]}")
+            print(f"Created team: {team['name']}")
     except Exception as e:
         print("Error adding team:", e)
 
@@ -43,7 +43,7 @@ def get_team_by_id(db: Database, id: int) -> dict:
 
 def modify_team_attribute(db: Database, id: int, increment: int) -> bool:
     # attribute: penalties, points
-    cur_value = get_team_by_id(id).points
+    cur_value = get_team_by_id(db, id)["points"]
     new_value = { "$set": { "points": cur_value + increment } }
     db.teams.update_one({"_id": id}, new_value)
 
@@ -55,4 +55,4 @@ def rotate_team_token(db: Database, id: int) -> None:
 def rotate_all_team_tokens(db: Database) -> None:
     teams = get_all_teams(db)
     for team in teams:
-        rotate_team_token(db, team._id)
+        rotate_team_token(db, team["_id"])

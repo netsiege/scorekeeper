@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     database = db.initialize("mongodb://10.7.7.7:27017", config_file)
 
-    teams.modify_team_attribute(database, 1, "points", 10)
+    teams.modify_team_attribute(database, 1, 10)
     teams.rotate_all_team_tokens(database)
     boxes.create_boxes_from_config(config_file)
     round.save_round(database)

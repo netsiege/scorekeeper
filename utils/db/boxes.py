@@ -27,7 +27,7 @@ def create_box(db: Database, box: Box) -> None:
     try:
         db.boxes.insert_one(box)
         if DEBUG:
-            print(f"Created box: {box["name"]}")
+            print(f"Created box: {box['name']}")
     except Exception as e:
         print("Error adding box:", e)
 # Parse box config
@@ -49,8 +49,8 @@ def create_boxes_from_config(config: dict, db: Database) -> None:
 
 # move to frontend
 def get_root_flag(box: Box) -> Flag | None:
-    for flag in box.control:
-        if flag.owner and flag.team_id != -1:
+    for flag in box["control"]:
+        if flag["owner"] and flag["team_id"] != -1:
             return flag
     return None
 
@@ -58,14 +58,14 @@ def get_root_flag(box: Box) -> Flag | None:
 def get_all_control_by_team(boxes: list[Box], team_id: int) -> list[(Flag, bool)]:
     control_flags = []
     for box in boxes:
-        valid: bool = all([check.last for check in box.services])
+        valid: bool = all([check["last"] for check in box["services"]])
         root_flag = get_root_flag(box)
         if not root_flag:
             for flag in box.control:
-                if flag.team_id == team_id:
+                if flag["team_id"] == team_id:
                     control_flags.append((flag, valid))
         else:
-            if root_flag.team_id == team_id:
+            if root_flag["team_id"] == team_id:
                 control_flags.append((flag, valid))
     return control_flags
 
@@ -77,4 +77,4 @@ def get_all_boxes(db: Database) -> list[Box]:
 
 # for tally
 def get_ip_control_path_mapping(boxes: list[Box]) -> list[(str,str)]:
-    return [(box.ip, ";".join([flag.path for flag in box.control])) for box in boxes]
+    return [(box.ip, ";".join([flag.path for flag in box["control"]])) for box in boxes]
