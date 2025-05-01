@@ -6,11 +6,12 @@ boxes:
     - flag:
       - path: "/home/jacob/ctrl.txt"
         value: 2
-      flag:
+        root: 0
       - path: "/root/ctrl.txt"
         value: 4
+        root: 1
   service:
-    - ftp:
+    - web:
       - name: project-share
         path: "/api/README.txt"
         port: 21
@@ -23,12 +24,13 @@ boxes:
     - flag:
       - path: "/var/www/wordpress/ctrl.txt"
         value: 1
-      flag:
+        root: 0
       - path: "/home/steven/ctrl.txt"
         value: 2
-      flag:
+        root: 0
       - path: "/root/ctrl.txt"
         value: 4
+        root: 1
   service:
     - web:
       - name: website

@@ -4,6 +4,7 @@ import utils.config as config
 import utils.db.db as db
 import utils.db.teams as teams
 import utils.db.round as round
+import utils.db.boxes as boxes
 # non-local imports
 from flask import Flask
 
@@ -20,6 +21,7 @@ if __name__ == "__main__":
 
     teams.modify_team_attribute(database, 1, "points", 10)
     teams.rotate_all_team_tokens(database)
+    boxes.create_boxes_from_config(config_file)
     round.save_round(database)
     
     app.run(host="0.0.0.0", debug=True, port=8000)

@@ -1,5 +1,6 @@
 from typing import TypedDict
 from utils.checks.check import Check
+from utils.checks.web import WebCheck
 from utils.control import Flag
 from pymongo.database import Database
 
@@ -12,21 +13,44 @@ class Box(TypedDict):
 
 class Flag(TypedDict):
     path: str
-    root: bool
+    owner: bool
     name: str
     team_id: int
+    points: int
+
+DEBUG = 1
+
+CHECK_MAP = {"web": WebCheck}
 
 # Create box
-
+def create_box(db: Database, box: Box) -> None:
+    try:
+        db.boxes.insert_one(box)
+        if DEBUG:
+            print(f"Created box: {box["name"]}")
+    except Exception as e:
+        print("Error adding box:", e)
 # Parse box config
 
+def parse_box_config(config: dict) -> list[Box]:
+    boxes: list[Box] = []
+    for entry in config["boxes"]:
+        control: list[Flag] = [Flag(path=flag["path"], owner=flag["owner"], name=flag["name"], team_id=-1, points=flag["points"]) for flag in entry["control"]]
+        services: list[Check] = [CHECK_MAP[type](**check) for type, check in entry["services"].items()]
+        boxes.append(Box(_id=entry["id"], name=entry["name"], ip=entry["ip"], control=control, services=map(lambda x: x.__dict__, services)))
+    return boxes
 # Create box from config
+def create_boxes_from_config(config: dict, db: Database) -> None:
+    boxes: list[Box] = parse_box_config(config)
+    for box in boxes:
+        create_box(db, box)
+
 
 
 # move to frontend
 def get_root_flag(box: Box) -> Flag | None:
     for flag in box.control:
-        if flag.root and flag.team_id != -1:
+        if flag.owner and flag.team_id != -1:
             return flag
     return None
 
@@ -54,5 +78,3 @@ def get_all_boxes(db: Database) -> list[Box]:
 # for tally
 def get_ip_control_path_mapping(boxes: list[Box]) -> list[(str,str)]:
     return [(box.ip, ";".join([flag.path for flag in box.control])) for box in boxes]
-
-    

@@ -9,3 +9,4 @@ class WebCheck(check.Check):
 
     def run(ip: str) -> bool:
         pass
+

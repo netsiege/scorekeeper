@@ -6,3 +6,6 @@ class Check:
 
     def run(ip: str) -> bool:
         pass
+
+class webCheck(Check):
+    pass
