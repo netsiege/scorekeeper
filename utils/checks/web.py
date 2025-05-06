@@ -11,5 +11,5 @@ class WebCheck(Check):
         return {"web": self.__dict__}
 
     def run(self, ip: str) -> bool:
-        pass
+        return True
 

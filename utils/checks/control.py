@@ -12,8 +12,14 @@ class ControlCheck(Check):
     
     def to_dict(self):
         return {"control": self.__dict__}
-    def run(self, ip: str) -> bool:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((ip,self.port))        
-        s.send(f"{self.path}")
+    
+    def run(self, ip: str, tokens: list[str]) -> bool:
+        # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # s.connect((ip,self.port))   
+        # s.send(f"{self.path}")
+        # print(s.recv(1024))
+        # s.close()
+        self.team_id = 1
 
+    def verify_token(self, challenge: str):
+        pass

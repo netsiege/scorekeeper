@@ -1,6 +1,4 @@
-from typing import TypedDict
 from pymongo.database import Database
-from pymongo.collection import Collection
 import uuid
 
 class Team:
@@ -47,11 +45,10 @@ def create_teams_from_config(config: dict, db: Database) -> None:
 def get_all_teams(db: Database) -> list[dict]:
     return [Team(team["_id"], name=team["name"], password=team["password"], points=team["points"], token=team["token"]) for team in db.teams.find({})]
 
-# def get_team_by_id(teams: list[Team], id: int) -> dict:
-#     for team in teams:
-#         if team["_id"] == id:
-#             return team
-#     return {}
+def get_team_by_id(teams: list[Team], id: int) -> Team:
+    for team in teams:
+        if team._id == id:
+            return team
 
 
 

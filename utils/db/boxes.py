@@ -1,8 +1,6 @@
-from typing import TypedDict
 from utils.checks.check import Check
 from utils.checks.web import WebCheck
 from utils.checks.control import ControlCheck
-from utils.control import Flag
 from pymongo.database import Database
 
 class Box:
@@ -36,7 +34,6 @@ CHECK_MAP = {"web": WebCheck, "control": ControlCheck}
 # Create box
 def create_box(db: Database, box: Box) -> None:
     try:
-        print(box.to_dict())
         db.boxes.insert_one(box.to_dict())
         if DEBUG:
             print(f"Created box: {box.name}")
@@ -48,7 +45,6 @@ def parse_box_config(config: dict) -> list[Box]:
     boxes: list[Box] = []
     for entry in config["boxes"]:
         checks: list[Check] = [CHECK_MAP[key](**(value)) for check in entry["checks"] for key, value in check.items()]
-        print(checks)
         boxes.append(Box(entry["id"], name=entry["name"], ip=entry["ip"], checks=checks))
     return boxes
 
