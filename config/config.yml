@@ -3,16 +3,16 @@ boxes:
 - name: love
   id: 1
   ip: 192.168.220.12
-  control:
-    - path: "/home/jacob/ctrl.txt"
-      value: 2
-      owner: 0
-      name: "user"
-    - path: "/root/ctrl.txt"
-      value: 4
-      owner: 1
-      name: "root"
-  service:
+  checks:
+    - control: 
+        path: "/home/jacob/ctrl.txt"
+        value: 2
+        name: "user"
+    - control: 
+        path: "/root/ctrl.txt"
+        value: 5
+        owner: 1
+        name: "root"
     - web:
         name: project-share
         path: "/api/README.txt"
@@ -23,20 +23,20 @@ boxes:
 - name: anger
   id: 2
   ip: 192.168.220.13
-  control:
-    - path: "/var/www/wordpress/ctrl.txt"
-      value: 1
-      owner: 0
-      name: "web"
-    - path: "/home/steven/ctrl.txt"
-      value: 2
-      owner: 0
-      name: "user"
-    - path: "/root/ctrl.txt"
-      value: 4
-      owner: 1
-      name: "root"
-  service:
+  checks:
+    - control:
+        path: "/var/www/wordpress/ctrl.txt"
+        value: 1
+        name: "web"
+    - control:
+        path: "/home/steven/ctrl.txt"
+        value: 2
+        name: "user"
+    - control:
+        path: "/root/ctrl.txt"
+        value: 4
+        owner: 1
+        name: "root"
     - web:
         name: website
         path: "/index.php"

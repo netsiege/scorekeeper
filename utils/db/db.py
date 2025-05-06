@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from pymongo.database import Database
 from pymongo.collection import Collection
-from utils.db.teams import create_teams_from_config, get_team_by_id
+from utils.db.teams import create_teams_from_config
 DEBUG = 1
 
 def initialize(connect_url: str, config: dict) -> Database:

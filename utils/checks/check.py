@@ -1,11 +1,9 @@
 class Check:
-    def __init__(self, name: str, port: int):
+    def __init__(self, name: str, port: int, last: bool):
         self.name = name
         self.port = port
-        self.last = True
-
-    def run(ip: str) -> bool:
+        self.last = last
+    def _to_dict(self):
         pass
-
-class webCheck(Check):
-    pass
+    def run(self, ip: str) -> bool:
+        pass

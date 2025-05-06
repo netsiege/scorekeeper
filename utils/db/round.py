@@ -4,44 +4,23 @@ from pymongo.collection import Collection
 from utils.db.teams import Team, get_all_teams
 from utils.db.boxes import Box
 from utils.control import Flag
-class SaveTeam(TypedDict):
-    _id: int
-    name: str
-    points: int
-    penalties: int
-        
-class SaveBox(TypedDict):
-    name: str
-    ip: str
-    control: list[Flag]
 
-class Round(TypedDict):
-    _id: int
-    teams: list[SaveTeam]
-    boxes: list[SaveBox]
+class Round:
+    def __init__(self, id, teams = [], boxes = []):
+        self._id: int = id
+        self.teams: list[dict] = teams
+        self.boxes: list[dict] = boxes
+    def teams_to_save(self, teams: list[Team]) -> None:
+        save_data: set = {"_id", "name", "points", "token"}
+        self.teams = [{key: team.__dict__[key] for key in save_data} for team in teams]
+    
+    def boxes_to_save(self, boxes: list[Team]) -> None:
+        save_data: set = {"_id", "name", "ip", "checks"}
+        self.boxes = [{key: box.to_dict()[key] for key in save_data} for box in boxes]
 
-def teams_to_save(data: list[Team]) -> SaveTeam:
-    save_data: set = {"_id", "name", "points", "penalties"}
-    return [SaveTeam({key: team[key] for key in save_data}) for team in data]
- 
-def boxes_to_save(data: list[Box]) -> SaveBox:
-    save_data: set = {"name", "ip", "control"}
-    return [SaveBox({key: box[key] for key in save_data}) for box in data]
-
-
-def build_round(db: Database) -> Round:
-    teams: list[Team] = get_all_teams(db)
-    save_teams: list[SaveTeam] = teams_to_save(teams)
-    rounds: int = db.rounds.count_documents({})
-    return Round(_id=rounds, teams=save_teams, boxes={})
-
-def save_round(db: Database) -> None:
-    round: Round = build_round(db)
-    db.rounds.insert_one(round)
+    def update_db(self, db: Database):
+        self._id += 1
+        db.rounds.insert_one(self.__dict__)
 
 if __name__ == "__main__":
-    box = Team(_id=1, name="eh", password="asdf", points=123, penalties=1, token="123")
-    box1= Team(_id=2, name="eh", password="asdf", points=123, penalties=1, token="123")
-    l = [box, box1]
-    d = teams_to_save(l)
-    print(d)
+    pass

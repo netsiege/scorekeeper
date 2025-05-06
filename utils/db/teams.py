@@ -3,29 +3,39 @@ from pymongo.database import Database
 from pymongo.collection import Collection
 import uuid
 
-class Team(TypedDict):
-    _id: int
-    name: str
-    password: str
-    points: int
-    token: str
+class Team:
+    def __init__(self, id, name="", password="", points=0, token=""):
+        self._id: int = id
+        self.name: str = name
+        self.password: str = password
+        self.points: int = points
+        self.token: str = token
     
+
+    def update_db(self, db: Database):
+        db.teams.update_one({"_id": self._id}, {"$set": {"token":self.token, "points": self.points}})
+
+    def rotate_team_token(self) -> None:
+        self.token = str(uuid.uuid4())
+
+    def modify_team_points(self, increment: int) -> None:
+        self.points += increment
 
 DEBUG = 1
 
 
 def create_team(db: Database, team: Team) -> None:
     try:
-        db.teams.insert_one(team)
+        db.teams.insert_one(team.__dict__)
         if DEBUG:
-            print(f"Created team: {team['name']}")
+            print(f"Created team: {team.name}")
     except Exception as e:
         print("Error adding team:", e)
 
 def parse_team_config(config: dict) -> list[Team]:
     teams: list[Team] = []
     for entry in config["teams"]:
-        teams.append(Team(_id=entry["id"], name=entry["name"], password=entry["password"], points=0, penalties=0, token=""))
+        teams.append(Team(entry["id"], name=entry["name"], password=entry["password"], points=0, token=""))
 
     return teams
 
@@ -35,24 +45,19 @@ def create_teams_from_config(config: dict, db: Database) -> None:
         create_team(db, team)
 
 def get_all_teams(db: Database) -> list[dict]:
-    return [Team(team) for team in list(db.teams.find({}))]
+    return [Team(team["_id"], name=team["name"], password=team["password"], points=team["points"], token=team["token"]) for team in db.teams.find({})]
 
-def get_team_by_id(db: Database, id: int) -> dict:
-    return Team(db.teams.find_one({"_id": id}))
+# def get_team_by_id(teams: list[Team], id: int) -> dict:
+#     for team in teams:
+#         if team["_id"] == id:
+#             return team
+#     return {}
 
 
-def modify_team_attribute(db: Database, id: int, increment: int) -> bool:
-    # attribute: penalties, points
-    cur_value = get_team_by_id(db, id)["points"]
-    new_value = { "$set": { "points": cur_value + increment } }
-    db.teams.update_one({"_id": id}, new_value)
 
-def rotate_team_token(db: Database, id: int) -> None:
-    new_uuid = uuid.uuid4()
-    new_value = { "$set": { "token": str(new_uuid) } }
-    db.teams.update_one({"_id": id}, new_value)
+def get_team_token_mapping(teams: list[Team]) -> dict[str, int]:
+    return {team.token: team._id for team in teams}
 
-def rotate_all_team_tokens(db: Database) -> None:
-    teams = get_all_teams(db)
+def rotate_all_team_tokens(teams: list[Team]) -> None:
     for team in teams:
-        rotate_team_token(db, team["_id"])
+        team.rotate_team_token()
