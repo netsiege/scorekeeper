@@ -30,8 +30,7 @@ if __name__ == "__main__":
         team.modify_team_points(10)
         team.update_db(database)
 
-    game.boxes[0].update_control("root", 1)
-
+    game.check_all_and_update()
     game.update_db()
     game.save_round()
     game.sync()

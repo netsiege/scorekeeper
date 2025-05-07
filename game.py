@@ -2,7 +2,7 @@ from utils.db.round import Round
 from pymongo.database import Database
 from utils.db.teams import get_all_teams, rotate_all_team_tokens, get_team_by_id, Team
 from utils.db.boxes import get_all_boxes, Box
-from utils.checks.control import ControlCheck
+from utils.checks.claim import claimCheck
 
 def check_all():
     pass
@@ -38,8 +38,8 @@ class Game:
             team_update = {}
             owner = tuple()
             for check in box.checks:
-                if type(check) is ControlCheck:
-                    check.run(box.ip, [team.token for team in self.teams])
+                if type(check) is claimCheck:
+                    check.run(box.ip, self.teams)
                     if check.owner:
                         owner = (check.team_id, check.value)
                     else:
