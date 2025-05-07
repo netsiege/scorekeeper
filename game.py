@@ -11,8 +11,8 @@ class Game:
     def __init__(self, db: Database, round: Round):
         self.db: Database = db
         self.round: Round = round
-        self.teams: list[Team] = []
-        self.boxes: list[Box] = []
+        self.teams: list[Team] = get_all_teams(self.db)
+        self.boxes: list[Box] = get_all_boxes(self.db)
     
     def save_round(self) -> None:
         self.round.teams_to_save(self.teams)
@@ -40,14 +40,16 @@ class Game:
             for check in box.checks:
                 if type(check) is claimCheck:
                     check.run(box.ip, self.teams)
-                    if check.owner:
-                        owner = (check.team_id, check.value)
-                    else:
-                        team_update[check.team_id] = check.value if check.team_id not in team_update else team_update[check.team_id] + check.value
+                    if check.team_id != -1:
+                        if check.owner:
+                            owner = (check.team_id, check.value)
+                        else:
+                            team_update[check.team_id] = check.value if check.team_id not in team_update else team_update[check.team_id] + check.value
                 else:
                     services &= check.run(box.ip)
             if services:
                 if owner:
+                    print(owner)
                     team = get_team_by_id(self.teams, owner[0])
                     team.modify_team_points(owner[1])
                 else:

@@ -19,18 +19,24 @@ class claimCheck(Check):
 
     def run(self, ip: str, teams: list[Team]) -> bool: 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            print(ip, self.port)
             s.connect((ip,self.port))   
             s.send(f"{self.path}".encode("utf-8"))
-            challenge = str(s.recv(1024))
+            challenge = str(s.recv(1024), 'utf-8')
         if not challenge:
             return True
-        team_id = self.verify_token(challenge, teams)
-        self.team_id = team_id
+        else:
+            team_id = self.verify_token(challenge, teams)
+            print(team_id)
+            self.team_id = team_id
+        return True
 
     def verify_token(self, challenge: str, teams: list[Team]):
         for team in teams:
             hasher =  hashlib.sha1()
-            hasher.update(team.token.encode('utf-8'))
+            hash_string = f"{team.token}:{self.path}"
+            print(hash_string)
+            hasher.update(hash_string.encode('utf-8'))
+            print(challenge, hasher.hexdigest())
             if challenge == hasher.hexdigest():
                 return team._id
+        return self.team_id
