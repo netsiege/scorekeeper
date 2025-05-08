@@ -10,8 +10,8 @@ from game import Game
 from flask import Flask
 import time
 import threading
+import random
 
-app = Flask(__name__)
 
 
 def main(game: Game):
@@ -26,21 +26,28 @@ def main(game: Game):
         print([team.__dict__ for team in game.teams])
         tokens = t.get_team_token_mapping(game.teams)
         print(tokens)
-        time.sleep(30)
+        time.sleep(game.interval + random.randrange(game.jitter))
+
+def web():
+    app.run(host="0.0.0.0", debug=True, port=8000, use_reloader=False)
 
 if __name__ == "__main__":
+    app = Flask(__name__)
     routes.register_routes(app)
     config_file: dict = config.read_config("config/config.yml")
 
     config.check_configs(config_file)
 
-    # Change static ip to use config file
-    database = db.initialize("mongodb://10.7.7.7:27017", config_file)
-    round = Round(0)
-    game = Game(database, round) 
-    game.rotate_team_tokens()
+    event = config_file["event"]
 
-    thread = threading.Thread(target=main, args=(game,))
-    thread.daemon = True
-    thread.start()
-    app.run(host="0.0.0.0", debug=True, port=8000, use_reloader=False)
+    # Change static ip to use config file
+    database = db.initialize(config_file)
+    round = Round(0)
+    checks_config = event["checks"]
+    game = Game(database, round, **checks_config)
+    game.sync()
+    game.rotate_team_tokens()
+    main_thread = threading.Thread(target=main, args=(game,), daemon=True)
+    # web_thread = threading.Thread(target=web, daemon=True)
+    main_thread.start()
+    web()

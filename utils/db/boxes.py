@@ -1,6 +1,6 @@
 from utils.checks.check import Check
 from utils.checks.web import WebCheck
-from utils.checks.claim import claimCheck
+from utils.checks.claim import ClaimCheck
 from pymongo.database import Database
 
 class Box:
@@ -24,12 +24,12 @@ class Box:
 
     def update_claim(self, name: str, team_id: int):
         for check in self.checks:
-            if type(check) == claimCheck and check.name == name:
+            if type(check) == ClaimCheck and check.name == name:
                 check.team_id = team_id
 
 DEBUG = 1
 
-CHECK_MAP = {"web": WebCheck, "claim": claimCheck}
+CHECK_MAP = {"web": WebCheck, "claim": ClaimCheck}
 
 # Create box
 def create_box(db: Database, box: Box) -> None:
@@ -44,7 +44,7 @@ def create_box(db: Database, box: Box) -> None:
 def parse_box_config(config: dict) -> list[Box]:
     boxes: list[Box] = []
     for entry in config["boxes"]:
-        checks: list[Check] = [CHECK_MAP[key](**(value)) for check in entry["checks"] for key, value in check.items()]
+        checks: list[Check] = [CHECK_MAP[key](**(value), ) for check in entry["checks"] for key, value in check.items()]
         boxes.append(Box(entry["id"], name=entry["name"], ip=entry["ip"], checks=checks))
     return boxes
 
@@ -88,5 +88,5 @@ def get_all_boxes(db: Database) -> list[Box]:
         boxes.append(Box(box["_id"], name=box["name"], ip=box["ip"], checks=checks))
     return boxes
 
-def get_all_claim_box_mapping(boxes: list[Box]) -> dict[int, claimCheck]:
+def get_all_claim_box_mapping(boxes: list[Box]) -> dict[int, ClaimCheck]:
     pass    

@@ -2,17 +2,19 @@ from utils.db.round import Round
 from pymongo.database import Database
 from utils.db.teams import get_all_teams, rotate_all_team_tokens, get_team_by_id, Team
 from utils.db.boxes import get_all_boxes, Box
-from utils.checks.claim import claimCheck
+from utils.checks.claim import ClaimCheck
 
-def check_all():
-    pass
+DEBUG = 1
 
 class Game:
-    def __init__(self, db: Database, round: Round):
+    def __init__(self, db: Database, round: Round, timeout: int = 2, interval: int = 600, jitter: int = 120):
         self.db: Database = db
         self.round: Round = round
         self.teams: list[Team] = get_all_teams(self.db)
         self.boxes: list[Box] = get_all_boxes(self.db)
+        self.timeout = timeout
+        self.interval = interval
+        self.jitter = jitter
     
     def save_round(self) -> None:
         self.round.teams_to_save(self.teams)
@@ -33,14 +35,18 @@ class Game:
             box.update_db(self.db)
 
     def check_all_and_update(self):
+        if DEBUG:
+            print("Running all checks")
         for box in self.boxes:
             services = 1
             team_update = {}
             owner = tuple()
             for check in box.checks:
-                if type(check) is claimCheck:
+                if type(check) is ClaimCheck:
                     check.run(box.ip, self.teams)
                     if check.team_id != -1:
+                        if DEBUG:
+                            print(f"Team {get_team_by_id(self.teams, check.team_id).name} claimed {check.name} on {box.name}!")
                         if check.owner:
                             owner = (check.team_id, check.value)
                         else:
@@ -49,7 +55,6 @@ class Game:
                     services &= check.run(box.ip)
             if services:
                 if owner:
-                    print(owner)
                     team = get_team_by_id(self.teams, owner[0])
                     team.modify_team_points(owner[1])
                 else:
