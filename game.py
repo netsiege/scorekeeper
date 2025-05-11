@@ -1,7 +1,7 @@
 from utils.db.round import Round
 from pymongo.database import Database
 from utils.db.teams import get_all_teams, rotate_all_team_tokens, get_team_by_id, get_team_token_mapping, get_team_points_mapping, Team
-from utils.db.boxes import get_all_boxes, get_all_claim_teamids, get_all_services, Box
+from utils.db.boxes import get_all_boxes, get_all_claims, get_all_services, Box
 from utils.checks.claim import ClaimCheck
 import requests
 import json
@@ -45,7 +45,8 @@ class Game:
             box.update_db(self.db)
 
     def send_claims(self):
-        res = requests.post(f"{self.frontend}/update/claims", data=json.dumps(get_all_claim_teamids(self.boxes)), headers=self.headers)
+        print(get_all_claims(self.boxes))
+        res = requests.post(f"{self.frontend}/update/claims", data=json.dumps(get_all_claims(self.boxes)), headers=self.headers)
         if not res.ok:
             raise FrontendError("Could not send claim data to the frontend")
 
