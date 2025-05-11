@@ -22,11 +22,16 @@ class WebCheck(Check):
             if response.status_code == 200: 
                 if self.regex:
                     if self.regex in response.text.decode('utf-8'):
+                        self.last = True
                         return True
                     else:
+                        self.last = False
                         return False
                 else:
+                    self.last = True
                     return True
         except:
+            self.last = False
             return False
+        self.last = False
         return False

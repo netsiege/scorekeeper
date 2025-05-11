@@ -11,7 +11,7 @@ boxes:
     - claim: 
         path: "/root/claim.txt"
         value: 5
-        owner: 1
+        owner: True
         name: "root"
     - web:
         name: project-share
@@ -56,6 +56,8 @@ event:
       timeout: 2
       interval: 10
       jitter: 5
+    frontend:
+      endpoint: http://127.0.0.1:3000
   # # 10 minutes, 2 minute jitter
   #     - interval: 600
   #       jitter: 120

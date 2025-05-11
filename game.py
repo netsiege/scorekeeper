@@ -1,13 +1,21 @@
 from utils.db.round import Round
 from pymongo.database import Database
-from utils.db.teams import get_all_teams, rotate_all_team_tokens, get_team_by_id, Team
-from utils.db.boxes import get_all_boxes, Box
+from utils.db.teams import get_all_teams, rotate_all_team_tokens, get_team_by_id, get_team_names_mapping, get_team_token_mapping, get_team_points_mapping, Team
+from utils.db.boxes import get_all_boxes, get_all_claims, get_all_services, Box
 from utils.checks.claim import ClaimCheck
+import requests
+import json
+
 
 DEBUG = 1
 
+
+class FrontendError(Exception):
+    pass
+
+
 class Game:
-    def __init__(self, db: Database, round: Round, timeout: int = 2, interval: int = 600, jitter: int = 120):
+    def __init__(self, db: Database, round: Round, timeout: int = 2, interval: int = 600, jitter: int = 120, endpoint: str = ""):
         self.db: Database = db
         self.round: Round = round
         self.teams: list[Team] = get_all_teams(self.db)
@@ -15,6 +23,8 @@ class Game:
         self.timeout = timeout
         self.interval = interval
         self.jitter = jitter
+        self.frontend = endpoint
+        self.headers = {'Content-type': 'application/json'}
     
     def save_round(self) -> None:
         self.round.teams_to_save(self.teams)
@@ -33,6 +43,28 @@ class Game:
             team.update_db(self.db)
         for box in self.boxes:
             box.update_db(self.db)
+
+    def send_claims(self):
+        res = requests.post(f"{self.frontend}/update/claims", data=json.dumps(get_all_claims(self.boxes)), headers=self.headers)
+        if not res.ok:
+            raise FrontendError("Could not send claim data to the frontend")
+
+    def send_services(self):
+        res = requests.post(f"{self.frontend}/update/services", data=json.dumps(get_all_services(self.boxes)), headers=self.headers)
+        if not res.ok:
+            raise FrontendError("Could not send service data to the frontend")
+        
+    def send_tokens(self):
+        res = requests.post(f"{self.frontend}/update/tokens", data=json.dumps(get_team_token_mapping(self.teams)), headers=self.headers)
+        if not res.ok:
+            raise FrontendError("Could not send team token data to the frontend")
+        
+    def send_points(self):
+        res = requests.post(f"{self.frontend}/update/points", data=json.dumps(get_team_points_mapping(self.teams)), headers=self.headers)
+        if not res.ok:
+            raise FrontendError("Could not send team score data to the frontend")
+
+
 
     def check_all_and_update(self):
         if DEBUG:

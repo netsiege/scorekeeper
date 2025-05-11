@@ -53,7 +53,12 @@ def get_team_by_id(teams: list[Team], id: int) -> Team:
 
 
 def get_team_token_mapping(teams: list[Team]) -> dict[str, int]:
-    return {team.token: team._id for team in teams}
+    return {team._id: team.token for team in teams}
+
+def get_team_points_mapping(teams: list[Team]) -> dict[str, int]:
+    return {team._id: team.points for team in teams}
+
+
 
 def rotate_all_team_tokens(teams: list[Team]) -> None:
     for team in teams:

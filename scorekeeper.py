@@ -16,17 +16,19 @@ import random
 
 def main(game: Game):
     while True:
-        game.update_db()
-        game.sync()
-        game.save_round()
-
+        time.sleep(game.interval + random.randrange(game.jitter))
 
         game.check_all_and_update()
         game.rotate_team_tokens()
         print([team.__dict__ for team in game.teams])
         tokens = t.get_team_token_mapping(game.teams)
         print(tokens)
-        time.sleep(game.interval + random.randrange(game.jitter))
+        game.update_db()
+        game.save_round()
+        game.send_claims()
+        game.send_services()
+        game.send_tokens()
+        game.send_points()
 
 def web():
     app.run(host="0.0.0.0", debug=True, port=8000, use_reloader=False)
@@ -44,9 +46,15 @@ if __name__ == "__main__":
     database = db.initialize(config_file)
     round = Round(0)
     checks_config = event["checks"]
-    game = Game(database, round, **checks_config)
+    frontend_config = event["frontend"]
+    game = Game(database, round, **checks_config, **frontend_config)
     game.sync()
     game.rotate_team_tokens()
+    game.update_db()
+    game.save_round()
+    game.send_boxes()
+    game.send_teams()
+
     main_thread = threading.Thread(target=main, args=(game,), daemon=True)
     # web_thread = threading.Thread(target=web, daemon=True)
     main_thread.start()
