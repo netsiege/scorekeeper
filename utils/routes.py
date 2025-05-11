@@ -1,3 +1,6 @@
+from utils.db.boxes import get_all_checks
+
+
 from flask import Blueprint, jsonify
 
 def create_engine_routes(game):
@@ -16,7 +19,12 @@ def create_engine_routes(game):
     def teams():
         return jsonify({team._id: team.name for team in game.teams})
 
+    @engine_routes.route("/api/claims", methods=['GET'])
+    def claims():
+        return jsonify(get_all_checks(game.boxes))
+    
     return engine_routes
+
 
 def register_routes(app, game):
     app.register_blueprint(create_engine_routes(game))

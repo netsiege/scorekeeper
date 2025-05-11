@@ -55,12 +55,14 @@ def create_boxes_from_config(config: dict, db: Database) -> None:
         create_box(db, box)
 
 
-def get_all_services(boxes: list[Box]) -> list[Check]:
+def get_all_services(boxes: list[Box]) -> dict[int, dict[str, bool]]:
     return {box._id: {check.name: check.last} for box in boxes for check in box.checks if type(check) is not ClaimCheck}
 
-def get_all_claims(boxes: list[Box]) -> list[Check]:
+def get_all_claim_teamids(boxes: list[Box]) -> dict[int, dict[str, int]]:
     return {box._id: {check.name: check.team_id} for box in boxes for check in box.checks if type(check) is ClaimCheck}
 
+def get_all_checks(boxes: list[Box]) -> dict[int, list[dict[str, str | int | bool]]]:
+    return {box._id: [check.__dict__ for check in box.checks] for box in boxes}
 # # move to frontend
 # def get_root_flag(box: Box) -> Flag | None:
 #     for check, details in box["checks"].items():

@@ -35,7 +35,6 @@ def web():
 
 if __name__ == "__main__":
     app = Flask(__name__)
-    routes.register_routes(app)
     config_file: dict = config.read_config("config/config.yml")
 
     config.check_configs(config_file)
@@ -52,9 +51,8 @@ if __name__ == "__main__":
     game.rotate_team_tokens()
     game.update_db()
     game.save_round()
-    game.send_boxes()
-    game.send_teams()
 
+    routes.register_routes(app, game)
     main_thread = threading.Thread(target=main, args=(game,), daemon=True)
     # web_thread = threading.Thread(target=web, daemon=True)
     main_thread.start()
