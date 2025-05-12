@@ -18,6 +18,21 @@ class Box:
             else:
                 ret[key] = getattr(self, key)
         return ret
+
+    def to_dict_frontend(self):
+        ret = dict()
+        ret["claims"] = []
+        ret["services"] = []
+        for key in self.__dict__:
+            if key == "checks":
+                for x in getattr(self,key):
+                    if type(x) is ClaimCheck:
+                        ret["claims"].append(x.__dict__)
+                    else:
+                        ret["services"].append(x.__dict__)
+            else:
+                ret[key] = getattr(self, key)
+        return ret
     
     def update_db(self, db: Database):
         db.boxes.update_one({"_id": self._id}, {"$set": {"checks": [x.to_dict() for x in self.checks]}})

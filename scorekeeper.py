@@ -27,8 +27,8 @@ def main(game: Game):
         game.save_round()
         game.send_claims()
         game.send_services()
-        game.send_tokens()
-        game.send_points()
+        # game.send_tokens()
+        # game.send_points()
 
 def web():
     app.run(host="0.0.0.0", debug=True, port=8000, use_reloader=False)
