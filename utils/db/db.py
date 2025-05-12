@@ -7,7 +7,7 @@ DEBUG = 1
 def initialize(config: dict) -> Database:
     event = config["event"]
     db_config = event["database"]
-    connect_url = f"mongodb://{db_config["location"]}:27017" 
+    connect_url = f"mongodb://{db_config['location']}:27017" 
     client: MongoClient = MongoClient(connect_url)
     if client is None:
         print(f"Could not connect to the database using url {connect_url}")

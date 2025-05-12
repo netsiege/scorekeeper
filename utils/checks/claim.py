@@ -31,11 +31,14 @@ class ClaimCheck(Check):
                 challenge = str(challenge, 'utf-8')
             except:
                 return True
+        print(challenge)
         if not challenge:
             return True
         else:
             team_id = self.verify_token(challenge, teams)
             self.team_id = team_id
+            if DEBUG:
+                print(f"Team {team_id} claimed {self.name} on {ip}!")
         return True
 
     def verify_token(self, challenge: str, teams: list[Team]):

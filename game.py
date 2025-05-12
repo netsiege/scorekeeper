@@ -78,8 +78,6 @@ class Game:
                 if type(check) is ClaimCheck:
                     check.run(box.ip, self.teams)
                     if check.team_id != -1:
-                        if DEBUG:
-                            print(f"Team {get_team_by_id(self.teams, check.team_id).name} claimed {check.name} on {box.name}!")
                         if check.owner:
                             owner = (check.team_id, check.value)
                         else:
