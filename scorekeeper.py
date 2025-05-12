@@ -30,12 +30,12 @@ def main(game: Game):
             game.send_services()
             # game.send_tokens()
             # game.send_points()
-        except ConnectionError:
+        except:
             print("Cannot connect to frontend")
             pass
 
 def web():
-    app.run(host="127.0.0.1", debug=True, port=8000, use_reloader=False)
+    app.run(host="0.0.0.0", debug=True, port=8000, use_reloader=False)
 
 if __name__ == "__main__":
     app = Flask(__name__)
