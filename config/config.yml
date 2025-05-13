@@ -1,8 +1,8 @@
 ---
 boxes:
-- name: love
+- name: hera
   id: 1
-  ip: 10.7.7.7
+  ip: 10.77.77.54
   checks:
     - claim: 
         path: "/tmp/claim.txt"
@@ -13,11 +13,11 @@ boxes:
         value: 5
         owner: True
         name: "root"
-    - web:
-        name: project-share
-        path: "/api/README.txt"
-        port: 21
-        regex: "EmotionDetection API"
+    - ssh:
+        name: ssh
+        regex: hera
+        command: hostname
+        cred_list: default
 
 
 - name: anger
@@ -43,6 +43,19 @@ teams:
   id: 2
   password: password
 
+creds:
+  default:
+    root: Production-Tree-Guideline5
+    # scoring_user:Timer-Fragile4-Drawing
+    # sysadmin:OlympusNeverFALL5!
+    # loscar:bestfriend
+    # spina:ZiPu8hIph3vo
+    # ysree:duqu3IfRunAv
+    # aselime:piKis4ufrocl
+    # candressa:w14C6ljeqath
+
+
+
 event:
     name: "Netsiege 1"
     database:
@@ -54,7 +67,7 @@ event:
       password: password
     checks:
       timeout: 2
-      interval: 30
+      interval: 10
       jitter: 5
     frontend:
       endpoint: http://127.0.0.1:3000

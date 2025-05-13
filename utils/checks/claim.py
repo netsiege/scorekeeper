@@ -6,7 +6,7 @@ import hashlib
 DEBUG = 1
 
 class ClaimCheck(Check):
-    def __init__(self, name: str = "flag", port: int = 1550, path: str = "/ctrl.txt", owner: bool = False, value: int = 2, team_id: int = -1, last: bool = True):
+    def __init__(self, name: str = "flag", port: int = 1550, path: str = "/ctrl.txt", owner: bool = False, value: int = 2, team_id: int = -1, credentials: dict = {}, last: bool = True):
         self.path = path
         self.owner = owner
         self.value = value

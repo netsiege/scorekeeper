@@ -21,6 +21,7 @@ def main(game: Game):
         game.check_all_and_update()
         game.rotate_team_tokens()
         print([team.__dict__ for team in game.teams])
+        print([box.to_dict() for box in game.boxes])
         tokens = t.get_team_token_mapping(game.teams)
         print(tokens)
         game.update_db()

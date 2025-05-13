@@ -4,7 +4,7 @@ import requests
 DEBUG = 1
 
 class WebCheck(Check):
-    def __init__(self, name: str = "web", port: int=80, regex: str="", path: str="/", last: bool = True):
+    def __init__(self, name: str = "web", port: int=80, regex: str="", path: str="/", credentials: dict = {}, last: bool = True):
         self.regex = regex
         self.path = path
 
