@@ -20,20 +20,17 @@ boxes:
         cred_list: default
 
 
-- name: anger
+- name: hestia
   id: 2
-  ip: 10.10.10.15
+  ip: 10.77.77.138
   checks:
     - claim:
         path: "C:\\Users\\Administrator\\claim.txt"
         value: 4
         owner: 1
         name: "root"
-    - web:
-        name: website
-        path: "/index.php"
-        port: 80
-        regex: "Welcome To Emotions Inc."
+    - rdp:
+        name: rdp
 
 teams:
 - name: team1

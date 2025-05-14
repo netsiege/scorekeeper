@@ -2,6 +2,7 @@ from utils.checks.check import Check
 from utils.checks.web import WebCheck
 from utils.checks.claim import ClaimCheck
 from utils.checks.ssh import SSHCheck
+from utils.checks.rdp import RDPCheck
 
 from pymongo.database import Database
 
@@ -46,7 +47,7 @@ class Box:
 
 DEBUG = 1
 
-CHECK_MAP = {"web": WebCheck, "claim": ClaimCheck, "ssh": SSHCheck}
+CHECK_MAP = {"web": WebCheck, "claim": ClaimCheck, "ssh": SSHCheck, "rdp": RDPCheck}
 
 # Create box
 def create_box(db: Database, box: Box) -> None:
