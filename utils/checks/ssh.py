@@ -34,6 +34,9 @@ class SSHCheck(Check):
                         self.last = False
                         if client:
                             client.close()
+
+                        if DEBUG:
+                            print("SSH check failed")
                         return False
                     elif self.regex and self.regex in _stdout.read().decode():
                         self.last = True
@@ -43,8 +46,12 @@ class SSHCheck(Check):
             if client:
                 client.close()
             self.last = False
+            if DEBUG:
+                print("SSH check failed")
             return False
 
         if client:
             client.close()
+        if DEBUG:
+            print("Web check passed!") if self.last else print("Web check failed")
         return self.last

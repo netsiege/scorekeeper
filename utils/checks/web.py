@@ -19,14 +19,17 @@ class WebCheck(Check):
             print(f"Running web check for {self.name} on {url}")
         try:
             response = requests.get(url, timeout=timeout)
-            if response.status_code == 200: 
+            if response.ok: 
                 if self.regex:
-                    if self.regex in response.text.decode('utf-8'):
+                    if self.regex in response.content.decode('utf-8'):
                         self.last = True
                     else:
                         self.last = False
                 else:
                     self.last = True
+            response.close()
         except:
             self.last = False
+        if DEBUG:
+            print("Web check passed!") if self.last else print("Web check failed")
         return self.last

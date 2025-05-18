@@ -16,7 +16,7 @@ class RDPCheck(Check):
         return {"rdp": self.__dict__}
     
 
-    def run(self, ip: str, timeout: int = 30) -> bool:
+    def run(self, ip: str, timeout: int = 10) -> bool:
         if DEBUG:
             print(f"Running rdp check for {self.name} on {ip}")
         try:
@@ -36,20 +36,19 @@ class RDPCheck(Check):
                 ]
                 if self.domain:
                     command.append(f'/d:{self.domain}')
-                print(ip, username, password)
                 process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 while process.returncode is None:
-                    if DEBUG:
-                        for line in process.stdout:
-                            print(line)
                     process.poll()
                 if process.returncode == 0:
                     self.last = True
                 else:
                     self.last = False
+                    if DEBUG:
+                        print("RDP check failed")
                     return False
         except Exception as e:
             print(e)
             self.last = False
+        print("RDP check passed!") if self.last else print("RDP check failed")
         return self.last
     
