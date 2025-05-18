@@ -88,9 +88,8 @@ boxes:
         name: ssh
         regex: hades
         command: hostname
-    - sql:
-        name: web
-        port: 80
+    - mysql:
+        name: mysql
 
 
 teams:
@@ -104,7 +103,7 @@ teams:
 creds:
   default:
     # root: Production-Tree-Guideline5
-    scoring_user:Timer-Fragile4-Drawing
+    scoring_user: Timer-Fragile4-Drawing
     # sysadmin:OlympusNeverFALL5!
     # loscar:bestfriend
     # spina:ZiPu8hIph3vo
