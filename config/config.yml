@@ -17,7 +17,6 @@ boxes:
         name: ssh
         regex: hera
         command: hostname
-        cred_list: default
 
 
 - name: hestia
@@ -42,8 +41,8 @@ teams:
 
 creds:
   default:
-    root: Production-Tree-Guideline5
-    # scoring_user:Timer-Fragile4-Drawing
+    # root: Production-Tree-Guideline5
+    scoring_user:Timer-Fragile4-Drawing
     # sysadmin:OlympusNeverFALL5!
     # loscar:bestfriend
     # spina:ZiPu8hIph3vo

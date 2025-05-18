@@ -7,7 +7,7 @@ import paramiko
 DEBUG = 1
 
 class SSHCheck(Check):
-    def __init__(self, name: str = "ssh", port: int=22, command: str="", regex: str="", credentials: dict = {}, cred_list: str="default", last: bool = True):
+    def __init__(self, name: str = "ssh", port: int=22, command: str="", regex: str="", credentials: dict = {}, cred_list: str="default", last: bool = False):
         self.command = command
         self.regex = regex
         self.cred_list = cred_list
@@ -30,20 +30,21 @@ class SSHCheck(Check):
                 client.connect(ip, username=username, password=password, timeout=timeout)
                 if self.command:
                     _stdin,_stdout,_stderr = client.exec_command(self.command)
-                    client.close()
                     if _stdout.channel.recv_exit_status() != 0:
                         self.last = False
+                        if client:
+                            client.close()
                         return False
                     elif self.regex and self.regex in _stdout.read().decode():
                         self.last = True
-                        return True
                     else:
                         self.last = True
-                        return True
         except:
             if client:
                 client.close()
             self.last = False
             return False
-        self.last = False
-        return False
+
+        if client:
+            client.close()
+        return self.last
