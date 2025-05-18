@@ -4,7 +4,7 @@ import requests
 DEBUG = 1
 
 class WebCheck(Check):
-    def __init__(self, name: str = "web", port: int=80, regex: str="", path: str="/", credentials: dict = {}, last: bool = True):
+    def __init__(self, name: str = "web", port: int=80, regex: str="", path: str="/", credentials: dict = {}, last: bool = False):
         self.regex = regex
         self.path = path
 
@@ -23,15 +23,10 @@ class WebCheck(Check):
                 if self.regex:
                     if self.regex in response.text.decode('utf-8'):
                         self.last = True
-                        return True
                     else:
                         self.last = False
-                        return False
                 else:
                     self.last = True
-                    return True
         except:
             self.last = False
-            return False
-        self.last = False
-        return False
+        return self.last

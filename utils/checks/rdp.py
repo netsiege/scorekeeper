@@ -1,7 +1,5 @@
 
 from utils.checks.check import Check
-import requests
-import paramiko
 import subprocess
 
 DEBUG = 1
