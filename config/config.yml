@@ -17,10 +17,36 @@ boxes:
         name: ssh
         regex: hera
         command: hostname
+    - web:
+        name: web
+        regex: Olympus
+        port: 80
 
+- name: hermes
+  id: 2
+  ip: 10.77.77.88
+  checks:
+    - claim: 
+        path: "/tmp/claim.txt"
+        value: 2
+        name: "user"
+    - claim: 
+        path: "/root/claim.txt"
+        value: 5
+        owner: True
+        name: "root"
+    - ssh:
+        name: ssh
+        regex: hermes
+        command: hostname
+    - web:
+        name: web
+        port: 80
+
+        
 
 - name: hestia
-  id: 2
+  id: 3
   ip: 10.77.77.138
   checks:
     - claim:
@@ -30,6 +56,42 @@ boxes:
         name: "root"
     - rdp:
         name: rdp
+
+
+- name: apollo
+  id: 4
+  ip: 192.168.220.95
+  checks:
+    - claim: 
+        path: "/root/claim.txt"
+        value: 5
+        owner: True
+        name: "root"
+    - ssh:
+        name: ssh
+        regex: apollo
+        command: hostname
+    - web:
+        name: web
+        port: 80
+
+- name: hades
+  id: 5
+  ip: 192.168.220.184
+  checks:
+    - claim: 
+        path: "/root/claim.txt"
+        value: 5
+        owner: True
+        name: "root"
+    - ssh:
+        name: ssh
+        regex: hades
+        command: hostname
+    - sql:
+        name: web
+        port: 80
+
 
 teams:
 - name: team1
