@@ -114,6 +114,7 @@ creds:
 
 
 event:
+    reset: True
     name: "Netsiege 1"
     database:
       location: 10.7.7.7 

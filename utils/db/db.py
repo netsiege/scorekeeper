@@ -15,14 +15,16 @@ def initialize(config: dict) -> Database:
     if DEBUG:
         print("Sucessfully connected to the database")
 
-    if "scorekeeper" in client.list_database_names():
-        client.drop_database("scorekeeper")
-    # Initialize database
     db: Database = client["scorekeeper"]
-
+    if "scorekeeper" in client.list_database_names():
+        if event["reset"]:
+            client.drop_database("scorekeeper")
+        else:
+            pass
+    # Initialize database
+    else:
     # Create teams from config
-
-    create_teams_from_config(config, db)
+        create_teams_from_config(config, db)
     create_boxes_from_config(config, db)
 
     if DEBUG:

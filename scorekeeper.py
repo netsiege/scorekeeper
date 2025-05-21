@@ -12,6 +12,7 @@ import time
 import threading
 import random
 
+DEBUG = 1
 
 
 def main(game: Game):
@@ -48,7 +49,10 @@ if __name__ == "__main__":
 
     # Change static ip to use config file
     database = db.initialize(config_file)
-    round = Round(0)
+    round_num = database.round.find({}).count() - 1
+    if DEBUG:
+        print(f"Starting from round {round_num}")
+    round = Round(round_num)
     checks_config = event["checks"]
     frontend_config = event["frontend"]
     game = Game(database, round, **checks_config, **frontend_config)
