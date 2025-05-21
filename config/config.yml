@@ -125,8 +125,8 @@ event:
       password: password
     checks:
       timeout: 2
-      interval: 10
-      jitter: 5
+      interval: 2
+      jitter: 1
     frontend:
       endpoint: http://127.0.0.1:3000
   # # 10 minutes, 2 minute jitter

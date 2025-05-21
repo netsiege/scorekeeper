@@ -17,6 +17,8 @@ class MySQLCheck(Check):
     def run(self, ip: str, timeout: int = 5) -> bool:
         for username, password in self.credentials[self.cred_list].items(): 
             try:
+                if DEBUG:
+                    print(f"Attempting to connect to MySQL database on {ip} with user {username} using password {password}")
                 connection = mysql.connector.connect(
                     host=ip,
                     user=username,
@@ -25,16 +27,18 @@ class MySQLCheck(Check):
                     connection_timeout=timeout
                 )
                 if connection.is_connected():
-                    if DEBUG:
-                        print(f"Successfully connected to MySQL database on {ip} with user {username} using password {password}")
                     connection.close()
                     self.last = True
                 else:
                     self.last = False
+                    if DEBUG:
+                        print("MySQL check failed")
                     return False
             except Exception as e:
                 if DEBUG:
                     print(e)
+                    print("MySQL check failed")
                 self.last = False
                 return False
+        print("MySQL check passed!") if self.last else print("MySQL check failed")
         return self.last
