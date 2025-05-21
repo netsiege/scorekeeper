@@ -5,12 +5,12 @@ boxes:
   ip: 10.77.77.54
   checks:
     - claim: 
-        path: "/tmp/claim.txt"
-        value: 2
+        path: "/var/www/wordpress/claim.txt"
+        value: 1
         name: "user"
     - claim: 
         path: "/root/claim.txt"
-        value: 5
+        value: 3
         owner: True
         name: "root"
     - ssh:
@@ -27,12 +27,12 @@ boxes:
   ip: 10.77.77.88
   checks:
     - claim: 
-        path: "/tmp/claim.txt"
-        value: 2
+        path: "/home/ysree/claim.txt"
+        value: 1
         name: "user"
     - claim: 
         path: "/root/claim.txt"
-        value: 5
+        value: 3
         owner: True
         name: "root"
     - ssh:
@@ -54,6 +54,10 @@ boxes:
         value: 4
         owner: 1
         name: "root"
+    - claim:
+        path: "C:\\Users\\spina\\claim.txt"
+        value: 1
+        name: "user"
     - rdp:
         name: rdp
 
@@ -64,7 +68,7 @@ boxes:
   checks:
     - claim: 
         path: "/root/claim.txt"
-        value: 5
+        value: 4
         owner: True
         name: "root"
     - ssh:
@@ -81,7 +85,7 @@ boxes:
   checks:
     - claim: 
         path: "/root/claim.txt"
-        value: 5
+        value: 4
         owner: True
         name: "root"
     - ssh:
