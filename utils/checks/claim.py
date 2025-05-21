@@ -23,17 +23,17 @@ class ClaimCheck(Check):
         if DEBUG:
             print(f"Running claim check for {self.name} on {ip}")
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(timeout)
             try:
-                s.settimeout(timeout)
                 s.connect((ip,self.port))   
                 s.send(f"{self.path}".encode("utf-8"))
-                challenge = s.recv(1024)
-                challenge = str(challenge, 'utf-8')
             except:
                 self.team_id = -1
                 if DEBUG:
                     print("Could not communicate with Tally")
                 return True
+            challenge = s.recv(1024)
+            challenge = str(challenge, 'utf-8')
         if not challenge:
             if DEBUG:
                 print("No new token")
