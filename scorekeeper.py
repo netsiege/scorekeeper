@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     # Change static ip to use config file
     database = db.initialize(config_file)
-    round_num = database.round.coutn_documents({})
+    round_num = database.round.count_documents({})
     if DEBUG:
         print(f"Starting from round {round_num}")
     round = Round(round_num)
