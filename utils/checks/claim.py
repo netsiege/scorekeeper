@@ -32,17 +32,17 @@ class ClaimCheck(Check):
                 if DEBUG:
                     print("Could not communicate with Tally")
                 return True
-            challenge = s.recv(1024)
-            challenge = str(challenge, 'utf-8')
-        if not challenge:
-            if DEBUG:
-                print("No new token")
-            return True
-        else:
-            team_id = self.verify_token(challenge, teams)
-            self.team_id = team_id
-            if DEBUG:
-                print(f"Team {team_id} claimed {self.name} on {ip}!")
+            try:
+                challenge = s.recv(1024)
+                challenge = str(challenge, 'utf-8')
+            except:
+                if DEBUG:
+                    print("No new token")
+                return True
+        team_id = self.verify_token(challenge, teams)
+        self.team_id = team_id
+        if DEBUG:
+            print(f"Team {team_id} claimed {self.name} on {ip}!")
         return True
 
     def verify_token(self, challenge: str, teams: list[Team]):
