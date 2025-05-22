@@ -8,12 +8,14 @@ class Team:
         self.password: str = password
         self.points: int = points
         self.token: str = token
+        self.cached_token: str = ""
     
 
     def update_db(self, db: Database):
         db.teams.update_one({"_id": self._id}, {"$set": {"token":self.token, "points": self.points}})
 
     def rotate_team_token(self) -> None:
+        self.cached_token = self.token
         self.token = str(uuid.uuid4())
 
     def modify_team_points(self, increment: int) -> None:

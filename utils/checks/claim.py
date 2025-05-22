@@ -47,9 +47,10 @@ class ClaimCheck(Check):
 
     def verify_token(self, challenge: str, teams: list[Team]):
         for team in teams:
-            hasher =  hashlib.sha1()
-            hash_string = f"{team.token}:{self.path}"
-            hasher.update(hash_string.encode('utf-8'))
-            if challenge == hasher.hexdigest():
-                return team._id
+            for token in (team.token, team.cached_token):
+                hasher =  hashlib.sha1()
+                hash_string = f"{token}:{self.path}"
+                hasher.update(hash_string.encode('utf-8'))
+                if challenge == hasher.hexdigest():
+                    return team._id
         return self.team_id

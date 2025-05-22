@@ -4,11 +4,11 @@ boxes:
   id: 1
   ip: 10.77.77.54
   checks:
-    - claim: 
+    - claim:
         path: "/var/www/wordpress/claim.txt"
         value: 1
         name: "user"
-    - claim: 
+    - claim:
         path: "/root/claim.txt"
         value: 3
         owner: True
@@ -26,11 +26,11 @@ boxes:
   id: 2
   ip: 10.77.77.88
   checks:
-    - claim: 
+    - claim:
         path: "/home/ysree/claim.txt"
         value: 1
         name: "user"
-    - claim: 
+    - claim:
         path: "/root/claim.txt"
         value: 3
         owner: True
@@ -43,7 +43,7 @@ boxes:
         name: web
         port: 80
 
-        
+
 
 - name: hestia
   id: 3
@@ -66,7 +66,7 @@ boxes:
   id: 4
   ip: 192.168.220.95
   checks:
-    - claim: 
+    - claim:
         path: "/root/claim.txt"
         value: 4
         owner: True
@@ -77,13 +77,13 @@ boxes:
         command: hostname
     - web:
         name: web
-        port: 80
+        port: 8000
 
 - name: hades
   id: 5
   ip: 192.168.220.184
   checks:
-    - claim: 
+    - claim:
         path: "/root/claim.txt"
         value: 4
         owner: True
@@ -121,7 +121,7 @@ event:
     reset: True
     name: "Netsiege 1"
     database:
-      location: 10.7.7.7 
+      location: 10.7.7.7
       username: ns_user
       password: password
     administrator:
