@@ -18,7 +18,7 @@ def create_engine_routes(game):
     
     @engine_routes.route("/api/teams", methods=['GET'])
     def teams():
-        return jsonify({team._id: team.name for team in game.teams})
+        return jsonify([team.to_dict_frontend() for team in game.teams])
 
     # @engine_routes.route("/api/claims", methods=['GET'])
     # def claims():
