@@ -1,100 +1,3 @@
----
-boxes:
-- name: hera
-  id: 1
-  ip: 10.77.77.54
-  checks:
-    - claim:
-        path: "/var/www/wordpress/claim.txt"
-        value: 1
-        name: "user"
-    - claim:
-        path: "/root/claim.txt"
-        value: 3
-        owner: True
-        name: "root"
-    - ssh:
-        name: ssh
-        regex: hera
-        command: hostname
-    - web:
-        name: web
-        regex: Olympus
-        port: 80
-
-- name: hermes
-  id: 2
-  ip: 10.77.77.88
-  checks:
-    - claim:
-        path: "/home/ysree/claim.txt"
-        value: 1
-        name: "user"
-    - claim:
-        path: "/root/claim.txt"
-        value: 3
-        owner: True
-        name: "root"
-    - ssh:
-        name: ssh
-        regex: hermes
-        command: hostname
-    - web:
-        name: web
-        port: 80
-
-
-
-- name: hestia
-  id: 3
-  ip: 10.77.77.138
-  checks:
-    - claim:
-        path: "C:\\Users\\Administrator\\claim.txt"
-        value: 4
-        owner: 1
-        name: "root"
-    - claim:
-        path: "C:\\Users\\spina\\claim.txt"
-        value: 1
-        name: "user"
-    - rdp:
-        name: rdp
-
-
-- name: apollo
-  id: 4
-  ip: 192.168.220.95
-  checks:
-    - claim:
-        path: "/root/claim.txt"
-        value: 4
-        owner: True
-        name: "root"
-    - ssh:
-        name: ssh
-        regex: apollo
-        command: hostname
-    - web:
-        name: web
-        port: 8000
-
-- name: hades
-  id: 5
-  ip: 192.168.220.184
-  checks:
-    - claim:
-        path: "/root/claim.txt"
-        value: 4
-        owner: True
-        name: "root"
-    - ssh:
-        name: ssh
-        regex: hades
-        command: hostname
-    - mysql:
-        name: mysql
-
 
 teams:
 - name: team1
@@ -118,7 +21,7 @@ creds:
 
 
 event:
-    reset: True
+    phase: 2
     name: "Netsiege 1"
     database:
       location: 10.7.7.7
@@ -133,6 +36,9 @@ event:
       jitter: 1
     frontend:
       endpoint: http://127.0.0.1:3000
+    phases:
+      - config/phase1.yml
+      - config/phase2.yml
   # # 10 minutes, 2 minute jitter
   #     - interval: 600
   #       jitter: 120

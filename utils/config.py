@@ -17,7 +17,4 @@ def check_configs(config: dict) -> None:
         if "id" not in entry or "name" not in entry or "password" not in entry or not entry["name"] or not entry["password"] or not entry["id"]:
             raise ConfigException("Incorrect team configuration")
     
-    # Check box config
-    for entry in config["boxes"]:
-        pass # TODO
 
