@@ -2,6 +2,7 @@
 from utils.checks.check import Check
 import requests
 import paramiko
+import re
 
 
 DEBUG = 1
@@ -32,16 +33,18 @@ class SSHCheck(Check):
                     _stdin,_stdout,_stderr = client.exec_command(self.command)
                     if _stdout.channel.recv_exit_status() != 0:
                         self.last = False
-                        if client:
-                            client.close()
-
-                        if DEBUG:
-                            print("SSH check failed")
-                        return False
-                    elif self.regex and self.regex in _stdout.read().decode():
-                        self.last = True
+                    elif self.regex:
+                        self.last = re.match(self.regex, _stdout.read().decode())
                     else:
                         self.last = True
+                else:
+                    self.last = True
+                if not self.last:
+                    if client:
+                        client.close()
+                    if DEBUG:
+                        print("SSH check failed")
+                    return False
         except:
             if client:
                 client.close()
@@ -53,5 +56,5 @@ class SSHCheck(Check):
         if client:
             client.close()
         if DEBUG:
-            print("Web check passed!") if self.last else print("Web check failed")
+            print("SSH check passed!") if self.last else print("SSH check failed")
         return self.last
