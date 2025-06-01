@@ -55,16 +55,19 @@ class Game:
         if not res.ok:
             raise FrontendError("Could not send service data to the frontend")
         
-    def send_tokens(self):
-        res = requests.post(f"{self.frontend}/update/tokens", data=json.dumps(get_team_token_mapping(self.teams)), headers=self.headers)
-        if not res.ok:
-            raise FrontendError("Could not send team token data to the frontend")
+    # def send_tokens(self):
+    #     res = requests.post(f"{self.frontend}/update/tokens", data=json.dumps(get_team_token_mapping(self.teams)), headers=self.headers)
+    #     if not res.ok:
+    #         raise FrontendError("Could not send team token data to the frontend")
         
-    def send_points(self):
-        res = requests.post(f"{self.frontend}/update/points", data=json.dumps(get_team_points_mapping(self.teams)), headers=self.headers)
+    # def send_points(self):
+    #     res = requests.post(f"{self.frontend}/update/points", data=json.dumps(get_team_points_mapping(self.teams)), headers=self.headers)
+    #     if not res.ok:
+    #         raise FrontendError("Could not send team score data to the frontend")
+    def send_teams(self):
+        res = requests.post(f"{self.frontend}/update/teams", data=json.dumps([team.to_dict_frontend() for team in self.teams]), headers=self.headers)
         if not res.ok:
-            raise FrontendError("Could not send team score data to the frontend")
-
+            raise FrontendError("Could not send team data to frontend")
 
 
     def check_all_and_update(self):

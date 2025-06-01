@@ -32,6 +32,7 @@ def main(game: Game):
             game.send_services()
             # game.send_tokens()
             # game.send_points()
+            game.send_teams()
         except:
             print("Cannot connect to frontend")
             pass
