@@ -1,6 +1,6 @@
 import socket 
 
-class CustomCharon:
+class CustomCharonCheck:
     def __init__(self, name: str = "charon", port: int = 9131, last: bool = False, credentials: dict = {}):
         self.name = name
         self.port = port

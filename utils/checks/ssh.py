@@ -34,7 +34,7 @@ class SSHCheck(Check):
                     if _stdout.channel.recv_exit_status() != 0:
                         self.last = False
                     elif self.regex:
-                        self.last = re.match(self.regex, _stdout.read().decode())
+                        self.last = bool(re.search(self.regex, _stdout.read().decode()))
                     else:
                         self.last = True
                 else:

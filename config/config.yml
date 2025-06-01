@@ -21,7 +21,7 @@ creds:
 
 
 event:
-    phase: 2
+    phase: 1
     name: "Netsiege 1"
     database:
       location: 10.7.7.7

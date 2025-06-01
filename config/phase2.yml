@@ -139,9 +139,9 @@ boxes:
         name: "root"
     - ssh:
         name: ssh
-        regex: hades
+        regex: poseidon
         command: hostname
-    - web:
+    - charon:
         name: charon
 
 creds:

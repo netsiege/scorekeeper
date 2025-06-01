@@ -23,7 +23,7 @@ class Team:
 
     def to_dict_frontend(self):
         keep = ["_id", "name", "points", "token"]
-        return {key:value for key, value in self.__dict__ if key in keep}
+        return {key:getattr(self,key) for key in self.__dict__ if key in keep}
         # keep = ["name", "points", "token"]s
         # return {self._id : {key:value for key, value in self.__dict__ if key in keep}}
 DEBUG = 1
