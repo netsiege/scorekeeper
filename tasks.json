@@ -1,0 +1,15 @@
+{
+    "tasks" : [
+        {
+            "type": "check_control",
+            "file_path": "/tmp/ctrl.txt"
+        },
+        {
+            "type": "rotate_key"
+        },
+        {
+            "type": "check_control",
+            "file_path": "/home/inspire/ctrl.txt"
+        }
+    ]
+}

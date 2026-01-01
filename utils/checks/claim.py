@@ -1,7 +1,6 @@
 from utils.checks.check import Check
 from utils.db.teams import Team
 import socket
-import hashlib
 
 DEBUG = 1
 
@@ -33,24 +32,27 @@ class ClaimCheck(Check):
                     print("Could not communicate with Tally")
                 return True
             try:
-                challenge = s.recv(1024)
-                challenge = str(challenge, 'utf-8')
+                response = s.recv(1024)
+                response = str(response, 'utf-8')
             except:
                 if DEBUG:
                     print("No new token")
                 return True
-        team_id = self.verify_token(challenge, teams)
+        # Responses no longer need to be hashed - direct token matching
+        team_id = self.verify_token(response, teams)
         self.team_id = team_id
         if DEBUG:
             print(f"Team {team_id} claimed {self.name} on {ip}!")
         return True
 
-    def verify_token(self, challenge: str, teams: list[Team]):
+    def verify_token(self, response: str, teams: list[Team]):
+        """
+        Verify the token directly without hashing.
+        The response should contain the raw team token.
+        """
+        response = response.strip()
         for team in teams:
             for token in (team.token, team.cached_token):
-                hasher =  hashlib.sha1()
-                hash_string = f"{token}:{self.path}"
-                hasher.update(hash_string.encode('utf-8'))
-                if challenge == hasher.hexdigest():
+                if response == token:
                     return team._id
         return self.team_id

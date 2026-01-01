@@ -3,6 +3,7 @@ from pymongo.database import Database
 from utils.db.teams import get_all_teams, rotate_all_team_tokens, get_team_by_id, get_team_token_mapping, get_team_points_mapping, Team
 from utils.db.boxes import get_all_boxes, get_all_claims, get_all_services, Box
 from utils.checks.claim import ClaimCheck
+from utils.task_queue import task_queue, TASK_TYPES
 import requests
 import json
 
@@ -25,6 +26,34 @@ class Game:
         self.jitter = jitter
         self.frontend = endpoint
         self.headers = {'Content-type': 'application/json'}
+        # Load task types from config
+        task_queue.load_task_types("tasks.json")
+    
+    def upload_tasks_to_boxes(self) -> None:
+        """Upload tasks to each box's task queue."""
+        for box in self.boxes:
+            hostname = box.name
+            # Add all available task types to each box's queue
+            for task in TASK_TYPES:
+                task_queue.add_task(hostname, task.copy())
+            if DEBUG:
+                print(f"Uploaded {len(TASK_TYPES)} tasks to {hostname}")
+    
+    def get_box_tasks(self, hostname: str) -> list[dict]:
+        """Get pending tasks for a specific box."""
+        return task_queue.get_tasks(hostname)
+    
+    def process_claim(self, hostname: str, claim_data: dict) -> bool:
+        """
+        Process a claim submission and remove the task from the queue.
+        Returns True if task was successfully removed.
+        """
+        task_type = claim_data.get('task_type') or claim_data.get('type')
+        if task_type:
+            removed = task_queue.remove_task_by_type(hostname, task_type)
+        else:
+            removed = task_queue.remove_task(hostname, 0)
+        return removed is not None
     
     def save_round(self) -> None:
         self.round.teams_to_save(self.teams)

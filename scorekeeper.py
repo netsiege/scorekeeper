@@ -19,6 +19,9 @@ def main(game: Game):
     while True:
         time.sleep(game.interval + random.randrange(game.jitter))
 
+        # Upload tasks to all boxes at the start of each round
+        game.upload_tasks_to_boxes()
+        
         game.check_all_and_update()
         game.rotate_team_tokens()
         print([team.__dict__ for team in game.teams])
