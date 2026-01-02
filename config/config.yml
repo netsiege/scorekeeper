@@ -24,7 +24,7 @@ event:
     phase: 1
     name: "Netsiege 1"
     database:
-      location: 10.7.7.7
+      location: 10.100.7.8
       username: ns_user
       password: password
     administrator:
@@ -36,6 +36,16 @@ event:
       jitter: 1
     frontend:
       endpoint: http://127.0.0.1:3000
+    tasks:
+      owner:
+        interval: 3
+        jitter: 6
+      non_owner:
+        interval: 3
+        jitter: 6
+      rotate_key:
+        interval: 3
+        jitter: 6
     phases:
       - config/phase1.yml
       - config/phase2.yml

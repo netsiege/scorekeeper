@@ -24,7 +24,7 @@ def create_engine_routes(game):
     @engine_routes.route("/api/tasks", methods=['GET'])
     def get_tasks():
         """
-        Get tasks for a specific box.
+        Get all pending tasks for a specific box.
         Query parameter: hostname - the box hostname to get tasks for
         """
         hostname = request.args.get('hostname')
@@ -32,8 +32,29 @@ def create_engine_routes(game):
             return jsonify({"error": "hostname query parameter is required"}), 400
         
         tasks = task_queue.get_tasks(hostname)
-        return jsonify({"hostname": hostname, "tasks": tasks})
+        
+        return jsonify({
+            "hostname": hostname,
+            "tasks": tasks
+        })
     
+    @engine_routes.route("/api/rotate_key", methods=['POST'])
+    def rotate_key():
+        """
+        Queue a rotate_key task for a specific box.
+        Query parameter: hostname - the box hostname to queue rotate_key for
+        """
+        hostname = request.args.get('hostname')
+        if not hostname:
+            return jsonify({"error": "hostname query parameter is required"}), 400
+        
+        task_queue.populate_from_config(hostname, "rotate_key")
+        
+        return jsonify({
+            "message": "Rotate key task queued",
+            "hostname": hostname
+        }), 201
+
     # @engine_routes.route("/api/tasks", methods=['POST'])
     # def add_task():
     #     """
@@ -75,7 +96,10 @@ def create_engine_routes(game):
         """
         Submit a claim response and remove the task from the queue.
         Query parameter: hostname - the box hostname submitting the claim
-        Body: JSON with claim data including task_type to identify which task to remove
+        Body: JSON with claim data including:
+            - file_path/path: identifies which task to remove
+            - token: the team's token for verification
+        Points are awarded based on the task's value and owner status.
         """
         hostname = request.args.get('hostname')
         if not hostname:
@@ -85,20 +109,40 @@ def create_engine_routes(game):
         if not claim_data:
             return jsonify({"error": "claim data is required in request body"}), 400
         
-        # Remove the task from the queue based on task type
-        task_type = claim_data.get('task_type') or claim_data.get('type')
-        if task_type:
-            removed_task = task_queue.remove_task_by_type(hostname, task_type)
-        else:
-            # If no type specified, remove the first task
-            removed_task = task_queue.remove_task(hostname, 0)
+        token = claim_data.get('token')
+        if not token:
+            return jsonify({"error": "token is required in claim data"}), 400
         
-        # Process the claim (no hashing required)
+        # Try to remove by file_path first (most specific)
+        file_path = claim_data.get('file_path') or claim_data.get('path')
+        removed_task = None
+        if file_path:
+            removed_task = task_queue.remove_task_by_path(hostname, file_path)
+        
+        # Fall back to task type if not removed by path
+        if not removed_task:
+            task_type = claim_data.get('task_type') or claim_data.get('type')
+            if task_type:
+                removed_task = task_queue.remove_task_by_type(hostname, task_type)
+            else:
+                # If no type specified, remove the first task
+                removed_task = task_queue.remove_task(hostname, 0)
+        
+        points_awarded = 0
+        team_id = None
+        if removed_task:
+            # Verify token and award points based on the task's value
+            points_awarded, team_id = game.award_claim_points(hostname, token, removed_task)
+            if team_id is None:
+                return jsonify({"error": "Invalid token"}), 401
+        
         response = {
             "message": "Claim submitted successfully",
             "hostname": hostname,
+            "team_id": team_id,
             "claim": claim_data,
-            "task_removed": removed_task is not None
+            "task_removed": removed_task is not None,
+            "points_awarded": points_awarded
         }
         
         return jsonify(response), 200

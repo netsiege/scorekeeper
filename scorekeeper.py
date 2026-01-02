@@ -6,6 +6,8 @@ import utils.db.teams as t
 from utils.db.round import Round
 import utils.db.boxes as b
 from game import Game
+from utils.task_queue import task_queue
+from utils.task_scheduler import task_scheduler
 # non-local imports
 from flask import Flask
 import time
@@ -19,9 +21,6 @@ def main(game: Game):
     while True:
         time.sleep(game.interval + random.randrange(game.jitter))
 
-        # Upload tasks to all boxes at the start of each round
-        game.upload_tasks_to_boxes()
-        
         game.check_all_and_update()
         game.rotate_team_tokens()
         print([team.__dict__ for team in game.teams])
@@ -59,11 +58,26 @@ if __name__ == "__main__":
     round = Round(round_num)
     checks_config = event["checks"]
     frontend_config = event["frontend"]
-    game = Game(database, round, **checks_config, **frontend_config)
+    tasks_config = event.get("tasks", {})
+    
+    # Get phase config path based on current phase
+    phase_num = event.get("phase", 1)
+    phases = event.get("phases", [])
+    phase_config = phases[phase_num - 1] if phases and phase_num <= len(phases) else ""
+    
+    game = Game(database, round, **checks_config, **frontend_config, phase_config=phase_config)
     game.sync()
     game.rotate_team_tokens()
     game.update_db()
     game.save_round()
+
+    # Start task schedulers for automatic task queuing
+    hostnames = [box.name for box in game.boxes]
+    task_scheduler.start_all(
+        tasks_config,
+        lambda hostname, task_type: task_queue.populate_from_config(hostname, task_type),
+        hostnames
+    )
 
     routes.register_routes(app, game)
     main_thread = threading.Thread(target=main, args=(game,), daemon=True)
