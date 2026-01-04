@@ -91,6 +91,9 @@ def create_engine_routes(game):
         
         task_queue.set_box_key(hostname, new_key)
         
+        # Remove the rotate_key task from the queue after successfully setting the key
+        task_queue.remove_task_by_type(hostname, "rotate_key")
+        
         return jsonify({
             "message": "Key updated successfully",
             "hostname": hostname,
