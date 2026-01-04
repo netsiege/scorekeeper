@@ -1,17 +1,15 @@
 from utils.db.boxes import get_all_checks, get_all_services
 from utils.task_queue import task_queue
 
-
 from flask import Blueprint, jsonify, request
 from flask_cors import CORS
 
+def get_client_ip():
+    """Get the actual TCP peer IP address."""
+    return request.remote_addr
+
 def create_engine_routes(game):
-
     engine_routes = Blueprint('engine_routes', __name__)
-
-    # @engine_routes.route("/api/authenticate", methods=['POST'])
-    # def login():
-    #     return 'hello world'
 
     @engine_routes.route("/api/boxes", methods=['GET'])
     def boxes():
@@ -23,87 +21,108 @@ def create_engine_routes(game):
 
     @engine_routes.route("/api/tasks", methods=['GET'])
     def get_tasks():
+        """Get all pending tasks for the client's box based on their IP.
+        Client IP is automatically mapped to hostname from phase config.
+        Header: Authorization: Bearer {token}
         """
-        Get all pending tasks for a specific box.
-        Query parameter: hostname - the box hostname to get tasks for
-        """
-        hostname = request.args.get('hostname')
+        client_ip = get_client_ip()
+        hostname = task_queue.get_hostname_by_ip(client_ip)
+        
         if not hostname:
-            return jsonify({"error": "hostname query parameter is required"}), 400
+            return jsonify({
+                "error": f"No hostname mapping found for IP {client_ip}",
+                "ip": client_ip
+            }), 400
+        
+        # Authenticate using box key
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({"error": "Authorization header with Bearer token is required"}), 401
+        
+        box_key = auth_header[7:]  # Remove 'Bearer ' prefix
+        if not task_queue.verify_box_key(hostname, box_key):
+            return jsonify({"error": "Invalid box key"}), 401
         
         tasks = task_queue.get_tasks(hostname)
         
         return jsonify({
             "hostname": hostname,
+            "ip": client_ip,
             "tasks": tasks
         })
     
     @engine_routes.route("/api/rotate_key", methods=['POST'])
     def rotate_key():
+        """Set a new authentication key for the client's box.
+        Client IP is automatically mapped to hostname from phase config.
+        Header: Authorization: Bearer {token} (required if key already exists)
+        Body: JSON with:
+            - key: the new authentication key to set for this box
         """
-        Queue a rotate_key task for a specific box.
-        Query parameter: hostname - the box hostname to queue rotate_key for
-        """
-        hostname = request.args.get('hostname')
-        if not hostname:
-            return jsonify({"error": "hostname query parameter is required"}), 400
+        client_ip = get_client_ip()
+        hostname = task_queue.get_hostname_by_ip(client_ip)
         
-        task_queue.populate_from_config(hostname, "rotate_key")
+        if not hostname:
+            return jsonify({
+                "error": f"No hostname mapping found for IP {client_ip}",
+                "ip": client_ip
+            }), 400
+        
+        # If a key already exists, require authentication with the current key
+        existing_key = task_queue.get_box_key(hostname)
+        if existing_key:
+            auth_header = request.headers.get('Authorization')
+            if not auth_header or not auth_header.startswith('Bearer '):
+                return jsonify({"error": "Authorization header with Bearer token is required to rotate existing key"}), 401
+            
+            provided_key = auth_header[7:]  # Remove 'Bearer ' prefix
+            if not task_queue.verify_box_key(hostname, provided_key):
+                return jsonify({"error": "Invalid box key"}), 401
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "JSON body is required"}), 400
+        
+        new_key = data.get('key')
+        if not new_key:
+            return jsonify({"error": "key is required in request body"}), 400
+        
+        task_queue.set_box_key(hostname, new_key)
         
         return jsonify({
-            "message": "Rotate key task queued",
-            "hostname": hostname
-        }), 201
-
-    # @engine_routes.route("/api/tasks", methods=['POST'])
-    # def add_task():
-    #     """
-    #     Add a task to a box's queue.
-    #     Query parameter: hostname - the box hostname to add task for
-    #     Body: JSON task object
-    #     """
-    #     hostname = request.args.get('hostname')
-    #     if not hostname:
-    #         return jsonify({"error": "hostname query parameter is required"}), 400
-        
-    #     task = request.get_json()
-    #     if not task:
-    #         return jsonify({"error": "task data is required in request body"}), 400
-        
-    #     task_queue.add_task(hostname, task)
-    #     return jsonify({"message": "Task added", "hostname": hostname, "task": task}), 201
-    
-    # @engine_routes.route("/api/tasks/bulk", methods=['POST'])
-    # def add_tasks_bulk():
-    #     """
-    #     Add multiple tasks to a box's queue.
-    #     Query parameter: hostname - the box hostname to add tasks for
-    #     Body: JSON array of task objects
-    #     """
-    #     hostname = request.args.get('hostname')
-    #     if not hostname:
-    #         return jsonify({"error": "hostname query parameter is required"}), 400
-        
-    #     tasks = request.get_json()
-    #     if not tasks or not isinstance(tasks, list):
-    #         return jsonify({"error": "task array is required in request body"}), 400
-        
-    #     task_queue.add_tasks(hostname, tasks)
-    #     return jsonify({"message": f"{len(tasks)} tasks added", "hostname": hostname}), 201
+            "message": "Key updated successfully",
+            "hostname": hostname,
+            "ip": client_ip
+        }), 200
 
     @engine_routes.route("/api/claim", methods=['POST'])
     def submit_claim():
-        """
-        Submit a claim response and remove the task from the queue.
-        Query parameter: hostname - the box hostname submitting the claim
+        """Submit a claim response and remove the task from the queue.
+        Client IP is automatically mapped to hostname from phase config.
+        Header: Authorization: Bearer {token}
         Body: JSON with claim data including:
-            - file_path/path: identifies which task to remove
             - token: the team's token for verification
+            - file_path/path: identifies which task to remove (optional)
+            - task_type/type: task type to remove (optional)
         Points are awarded based on the task's value and owner status.
         """
-        hostname = request.args.get('hostname')
+        client_ip = get_client_ip()
+        hostname = task_queue.get_hostname_by_ip(client_ip)
+        
         if not hostname:
-            return jsonify({"error": "hostname query parameter is required"}), 400
+            return jsonify({
+                "error": f"No hostname mapping found for IP {client_ip}",
+                "ip": client_ip
+            }), 400
+        
+        # Authenticate using box key
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({"error": "Authorization header with Bearer token is required"}), 401
+        
+        box_key = auth_header[7:]  # Remove 'Bearer ' prefix
+        if not task_queue.verify_box_key(hostname, box_key):
+            return jsonify({"error": "Invalid box key"}), 401
         
         claim_data = request.get_json()
         if not claim_data:
@@ -139,6 +158,7 @@ def create_engine_routes(game):
         response = {
             "message": "Claim submitted successfully",
             "hostname": hostname,
+            "ip": client_ip,
             "team_id": team_id,
             "claim": claim_data,
             "task_removed": removed_task is not None,
@@ -147,33 +167,31 @@ def create_engine_routes(game):
         
         return jsonify(response), 200
     
-    # @engine_routes.route("/api/tasks/clear", methods=['DELETE'])
-    # def clear_tasks():
-    #     """
-    #     Clear all tasks for a specific box.
-    #     Query parameter: hostname - the box hostname to clear tasks for
-    #     """
-    #     hostname = request.args.get('hostname')
-    #     if not hostname:
-    #         return jsonify({"error": "hostname query parameter is required"}), 400
-        
-    #     task_queue.clear_tasks(hostname)
-    #     return jsonify({"message": "Tasks cleared", "hostname": hostname}), 200
-    
     @engine_routes.route("/api/tasks/all", methods=['GET'])
     def get_all_tasks():
+        """Get all task queues for all boxes.
+        Header: Authorization: Bearer {token}
         """
-        Get all task queues for all boxes.
-        """
+        client_ip = get_client_ip()
+        hostname = task_queue.get_hostname_by_ip(client_ip)
+        
+        if not hostname:
+            return jsonify({
+                "error": f"No hostname mapping found for IP {client_ip}",
+                "ip": client_ip
+            }), 400
+        
+        # Authenticate using box key
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({"error": "Authorization header with Bearer token is required"}), 401
+        
+        box_key = auth_header[7:]  # Remove 'Bearer ' prefix
+        if not task_queue.verify_box_key(hostname, box_key):
+            return jsonify({"error": "Invalid box key"}), 401
+        
         return jsonify(task_queue.get_all_queues())
 
-    # @engine_routes.route("/api/claims", methods=['GET'])
-    # def claims():
-    #     return jsonify(get_all_checks(game.boxes))
-    
-    # @engine_routes.route("/api/services", methods=['GET'])
-    # def services():
-    #     return jsonify(get_all_services(game.boxes))
     return engine_routes
 
 

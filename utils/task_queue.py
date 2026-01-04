@@ -28,6 +28,8 @@ class TaskQueue:
     def __init__(self):
         self._queues: dict[str, set[str]] = {}  # hostname -> set of task keys
         self._box_tasks: dict[str, dict[str, list[dict]]] = {}  # hostname -> configured tasks from phase yaml
+        self._ip_to_hostname: dict[str, str] = {}  # IP address -> hostname mapping
+        self._box_keys: dict[str, str] = {}  # hostname -> authentication key
         self._lock = threading.Lock()
     
     def load_phase_config(self, filepath: str) -> None:
@@ -39,8 +41,13 @@ class TaskQueue:
                 
                 for box in boxes:
                     hostname = box.get("name")
+                    ip = box.get("ip")
                     if not hostname:
                         continue
+                    
+                    # Build IP to hostname mapping
+                    if ip:
+                        self._ip_to_hostname[ip] = hostname
                     
                     owner_tasks = []
                     non_owner_tasks = []
@@ -71,6 +78,29 @@ class TaskQueue:
                     
         except Exception as e:
             print(f"Error loading phase config: {e}")
+    
+    def get_hostname_by_ip(self, ip: str) -> Optional[str]:
+        """Map a client IP address to a hostname based on the phase config."""
+        with self._lock:
+            return self._ip_to_hostname.get(ip)
+    
+    def set_box_key(self, hostname: str, key: str) -> None:
+        """Set the authentication key for a specific box."""
+        with self._lock:
+            self._box_keys[hostname] = key
+    
+    def get_box_key(self, hostname: str) -> Optional[str]:
+        """Get the authentication key for a specific box."""
+        with self._lock:
+            return self._box_keys.get(hostname)
+    
+    def verify_box_key(self, hostname: str, key: str) -> bool:
+        """Verify if the provided key matches the stored key for a box."""
+        with self._lock:
+            stored_key = self._box_keys.get(hostname)
+            if stored_key is None:
+                return False
+            return stored_key == key
     
     def get_box_task_config(self, hostname: str) -> dict[str, list[dict]]:
         """Get the configured tasks for a specific box from phase config."""
