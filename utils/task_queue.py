@@ -161,10 +161,18 @@ class TaskQueue:
             self.populate_from_config(hostname)
     
     def get_tasks(self, hostname: str) -> list[dict]:
-        """Get all tasks for a specific box."""
+        """Get all tasks for a specific box.
+        If no key is set for the host, only rotate_key tasks are returned.
+        """
         with self._lock:
             keys = self._queues.get(hostname, set())
-            return [_key_to_task(k) for k in keys]
+            tasks = [_key_to_task(k) for k in keys]
+            
+            # If no key is set, only return rotate_key tasks
+            if not self._box_keys.get(hostname):
+                tasks = [t for t in tasks if t.get("type") == "rotate_key"]
+            
+            return tasks
     
     def get_next_task(self, hostname: str) -> Optional[dict]:
         """Get a task for a box without removing it."""
