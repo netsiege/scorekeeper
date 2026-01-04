@@ -85,9 +85,9 @@ def create_engine_routes(game):
         if not data:
             return jsonify({"error": "JSON body is required"}), 400
         
-        new_key = data.get('key')
+        new_key = data.get('new_key')
         if not new_key:
-            return jsonify({"error": "key is required in request body"}), 400
+            return jsonify({"error": "new_key is required in request body"}), 400
         
         task_queue.set_box_key(hostname, new_key)
         
