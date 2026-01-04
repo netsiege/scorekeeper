@@ -135,7 +135,7 @@ def create_engine_routes(game):
         if not claim_data:
             return jsonify({"error": "claim data is required in request body"}), 400
         
-        token = claim_data.get('token')
+        token = claim_data.get('file_content')
         if not token:
             return jsonify({"error": "token is required in claim data"}), 400
         
