@@ -23,7 +23,7 @@ def create_engine_routes(game):
     def get_tasks():
         """Get all pending tasks for the client's box based on their IP.
         Client IP is automatically mapped to hostname from phase config.
-        Header: Authorization: Bearer {token}
+        Header: Authorization: Bearer {token} (required if key exists)
         """
         client_ip = get_client_ip()
         hostname = task_queue.get_hostname_by_ip(client_ip)
@@ -34,14 +34,16 @@ def create_engine_routes(game):
                 "ip": client_ip
             }), 400
         
-        # Authenticate using box key
-        auth_header = request.headers.get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return jsonify({"error": "Authorization header with Bearer token is required"}), 401
-        
-        box_key = auth_header[7:]  # Remove 'Bearer ' prefix
-        if not task_queue.verify_box_key(hostname, box_key):
-            return jsonify({"error": "Invalid box key"}), 401
+        # If a key exists for this box, require authentication
+        existing_key = task_queue.get_box_key(hostname)
+        if existing_key:
+            auth_header = request.headers.get('Authorization')
+            if not auth_header or not auth_header.startswith('Bearer '):
+                return jsonify({"error": "Authorization header with Bearer token is required"}), 401
+            
+            box_key = auth_header[7:]  # Remove 'Bearer ' prefix
+            if not task_queue.verify_box_key(hostname, box_key):
+                return jsonify({"error": "Invalid box key"}), 401
         
         tasks = task_queue.get_tasks(hostname)
         
@@ -99,7 +101,7 @@ def create_engine_routes(game):
     def submit_claim():
         """Submit a claim response and remove the task from the queue.
         Client IP is automatically mapped to hostname from phase config.
-        Header: Authorization: Bearer {token}
+        Header: Authorization: Bearer {token} (required if key exists)
         Body: JSON with claim data including:
             - token: the team's token for verification
             - file_path/path: identifies which task to remove (optional)
@@ -115,14 +117,16 @@ def create_engine_routes(game):
                 "ip": client_ip
             }), 400
         
-        # Authenticate using box key
-        auth_header = request.headers.get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return jsonify({"error": "Authorization header with Bearer token is required"}), 401
-        
-        box_key = auth_header[7:]  # Remove 'Bearer ' prefix
-        if not task_queue.verify_box_key(hostname, box_key):
-            return jsonify({"error": "Invalid box key"}), 401
+        # If a key exists for this box, require authentication
+        existing_key = task_queue.get_box_key(hostname)
+        if existing_key:
+            auth_header = request.headers.get('Authorization')
+            if not auth_header or not auth_header.startswith('Bearer '):
+                return jsonify({"error": "Authorization header with Bearer token is required"}), 401
+            
+            box_key = auth_header[7:]  # Remove 'Bearer ' prefix
+            if not task_queue.verify_box_key(hostname, box_key):
+                return jsonify({"error": "Invalid box key"}), 401
         
         claim_data = request.get_json()
         if not claim_data:
@@ -132,16 +136,25 @@ def create_engine_routes(game):
         if not token:
             return jsonify({"error": "token is required in claim data"}), 400
         
+        # Check if there are any tasks in the queue before processing
+        if not task_queue.has_tasks(hostname):
+            return jsonify({"error": "No tasks available in queue for this box"}), 400
+        
         # Try to remove by file_path first (most specific)
         file_path = claim_data.get('file_path') or claim_data.get('path')
         removed_task = None
         if file_path:
             removed_task = task_queue.remove_task_by_path(hostname, file_path)
+            if not removed_task:
+                return jsonify({"error": f"No task found with file_path: {file_path}"}), 400
         
         # Fall back to task type if not removed by path
         if not removed_task:
             task_type = claim_data.get('task_type') or claim_data.get('type')
             if task_type:
+                # Verify task type exists before attempting to remove
+                if not task_queue.task_type_exists(hostname, task_type):
+                    return jsonify({"error": f"No task found with type: {task_type}"}), 400
                 removed_task = task_queue.remove_task_by_type(hostname, task_type)
             else:
                 # If no type specified, remove the first task

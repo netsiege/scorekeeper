@@ -183,6 +183,16 @@ class TaskQueue:
                 return _key_to_task(key)
         return None
     
+    def task_type_exists(self, hostname: str, task_type: str) -> bool:
+        """Check if a task of a specific type exists in a box's queue."""
+        with self._lock:
+            if hostname in self._queues:
+                for key in list(self._queues[hostname]):
+                    task = _key_to_task(key)
+                    if task.get("type") == task_type:
+                        return True
+        return False
+    
     def remove_task_by_type(self, hostname: str, task_type: str) -> Optional[dict]:
         """Remove the first task of a specific type from a box's queue."""
         with self._lock:
