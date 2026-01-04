@@ -13,7 +13,7 @@ def create_engine_routes(game):
 
     @engine_routes.route("/api/boxes", methods=['GET'])
     def boxes():
-        return jsonify([box.to_dict_frontend() for box in game.boxes])
+        return jsonify([box.to_dict_frontend() for box in game.boxes.values()])
     
     @engine_routes.route("/api/teams", methods=['GET'])
     def teams():
@@ -163,13 +163,16 @@ def create_engine_routes(game):
                 # If no type specified, remove the first task
                 removed_task = task_queue.remove_task(hostname, 0)
         
-        points_awarded = 0
         team_id = None
+        check_id = None
         if removed_task:
-            # Verify token and award points based on the task's value
-            points_awarded, team_id = game.award_claim_points(hostname, token, removed_task)
+            # Verify token and assign team_id to the claim
+            file_path = removed_task.get('file_path')
+            team_id = game.assign_box_team_id(hostname, token, file_path)
             if team_id is None:
                 return jsonify({"error": "Invalid token"}), 401
+            
+            check_id = f"{hostname}_{file_path}"
         
         response = {
             "message": "Claim submitted successfully",
@@ -178,7 +181,7 @@ def create_engine_routes(game):
             "team_id": team_id,
             "claim": claim_data,
             "task_removed": removed_task is not None,
-            "points_awarded": points_awarded
+            "check_id": check_id
         }
         
         return jsonify(response), 200

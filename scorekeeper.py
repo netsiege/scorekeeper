@@ -24,7 +24,7 @@ def main(game: Game):
         game.check_all_and_update()
         game.rotate_team_tokens()
         print([team.__dict__ for team in game.teams])
-        print([box.to_dict() for box in game.boxes])
+        print([box.to_dict() for box in game.boxes.values()])
         tokens = t.get_team_token_mapping(game.teams)
         print(tokens)
         game.update_db()
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     game.save_round()
 
     # Start task schedulers for automatic task queuing
-    hostnames = [box.name for box in game.boxes]
+    hostnames = [box.name for box in game.boxes.values()]
     task_scheduler.start_all(
         tasks_config,
         lambda hostname, task_type: task_queue.populate_from_config(hostname, task_type),

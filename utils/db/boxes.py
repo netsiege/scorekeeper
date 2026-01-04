@@ -10,43 +10,60 @@ from utils.checks.custom.custom_charon import CustomCharonCheck
 from pymongo.database import Database
 
 class Box:
-    def __init__(self, id, name="", ip = "", checks=[]):
+    def __init__(self, id, name="", ip="", checks=None, claims=None):
         self._id: int = id
         self.name: str = name
         self.ip: str = ip
-        self.checks: list[Check] = checks
+        self.checks: list[Check] = checks if checks is not None else []
+        # Claims stored as dict keyed by file_path for O(1) lookup
+        self.claims: dict[str, ClaimCheck] = claims if claims is not None else {}
 
     def to_dict(self):
-        ret = dict()
-        for key in self.__dict__:
-            if key == "checks":
-                ret[key] = [x.to_dict() for x in getattr(self, key)]
-            else:
-                ret[key] = getattr(self, key)
-        return ret
+        return {
+            "_id": self._id,
+            "name": self.name,
+            "ip": self.ip,
+            "checks": [x.to_dict() for x in self.checks] + [x.to_dict() for x in self.claims.values()]
+        }
 
     def to_dict_frontend(self):
-        ret = dict()
-        ret["claims"] = []
-        ret["services"] = []
-        for key in self.__dict__:
-            if key == "checks":
-                for x in getattr(self,key):
-                    if type(x) is ClaimCheck:
-                        ret["claims"].append(x.__dict__)
-                    else:
-                        ret["services"].append(x.__dict__)
-            else:
-                ret[key] = getattr(self, key)
-        return ret
+        return {
+            "_id": self._id,
+            "name": self.name,
+            "ip": self.ip,
+            "claims": [claim.__dict__ for claim in self.claims.values()],
+            "services": [check.__dict__ for check in self.checks]
+        }
     
     def update_db(self, db: Database):
-        db.boxes.update_one({"_id": self._id}, {"$set": {"checks": [x.to_dict() for x in self.checks]}})
+        all_checks = [x.to_dict() for x in self.checks] + [x.to_dict() for x in self.claims.values()]
+        db.boxes.update_one({"_id": self._id}, {"$set": {"checks": all_checks}})
 
-    def update_claim(self, name: str, team_id: int):
-        for check in self.checks:
-            if type(check) == ClaimCheck and check.name == name:
-                check.team_id = team_id
+    def update_claim_by_name(self, name: str, team_id: int) -> bool:
+        """Update a claim's team_id by claim name."""
+        for claim in self.claims.values():
+            if claim.name == name:
+                claim.team_id = team_id
+                return True
+        return False
+
+    def update_claim_by_path(self, path: str, team_id: int) -> bool:
+        """Update a claim's team_id by path (O(1) lookup)."""
+        if path in self.claims:
+            self.claims[path].team_id = team_id
+            return True
+        return False
+
+    def get_claim_by_path(self, path: str) -> ClaimCheck | None:
+        """Get a claim by its path (O(1) lookup)."""
+        return self.claims.get(path)
+
+    def get_claim_by_name(self, name: str) -> ClaimCheck | None:
+        """Get a claim by its name."""
+        for claim in self.claims.values():
+            if claim.name == name:
+                return claim
+        return None
 
 DEBUG = 1
 
@@ -62,29 +79,37 @@ def create_box(db: Database, box: Box) -> None:
         print("Error adding box:", e)
 # Parse box config
 
-def parse_box_config(config: dict) -> list[Box]:
-    boxes: list[Box] = []
+def parse_box_config(config: dict) -> dict[str, Box]:
+    boxes: dict[str, Box] = {}
     for entry in config["boxes"]:
-        # print(config["creds"])
-        checks: list[Check] = [CHECK_MAP[key](**(value), credentials=config["creds"]) for check in entry["checks"] for key, value in check.items()]
-        boxes.append(Box(entry["id"], name=entry["name"], ip=entry["ip"], checks=checks))
+        checks: list[Check] = []
+        claims: dict[str, ClaimCheck] = {}
+        for check in entry["checks"]:
+            for key, value in check.items():
+                check_obj = CHECK_MAP[key](**(value), credentials=config["creds"])
+                if key == "claim":
+                    claims[check_obj.path] = check_obj
+                else:
+                    checks.append(check_obj)
+        box = Box(entry["id"], name=entry["name"], ip=entry["ip"], checks=checks, claims=claims)
+        boxes[box.name] = box
     return boxes
 
 # Create box from config
 def create_boxes_from_config(config: dict, db: Database) -> None:
-    boxes: list[Box] = parse_box_config(config)
-    for box in boxes:
+    boxes: dict[str, Box] = parse_box_config(config)
+    for box in boxes.values():
         create_box(db, box)
 
 
-def get_all_services(boxes: list[Box]) -> dict[int, dict[str, bool]]:
-    return {box._id: [check.__dict__ for check in box.checks if type(check) is not ClaimCheck] for box in boxes}
+def get_all_services(boxes: dict[str, Box]) -> dict[int, dict[str, bool]]:
+    return {box._id: [check.__dict__ for check in box.checks] for box in boxes.values()}
 
-def get_all_claims(boxes: list[Box]) -> dict[int, dict[str, int]]:
-    return {box._id: [check.__dict__ for check in box.checks if type(check) is ClaimCheck] for box in boxes}
+def get_all_claims(boxes: dict[str, Box]) -> dict[int, dict[str, int]]:
+    return {box._id: [claim.__dict__ for claim in box.claims.values()] for box in boxes.values()}
 
-def get_all_checks(boxes: list[Box]) -> dict[int, list[dict[str, str | int | bool]]]:
-    return {box._id: [check.__dict__ for check in box.checks] for box in boxes}
+def get_all_checks(boxes: dict[str, Box]) -> dict[int, list[dict[str, str | int | bool]]]:
+    return {box._id: [check.__dict__ for check in box.checks] + [claim.__dict__ for claim in box.claims.values()] for box in boxes.values()}
 # # move to frontend
 # def get_root_flag(box: Box) -> Flag | None:
 #     for check, details in box["checks"].items():
@@ -110,12 +135,20 @@ def get_all_checks(boxes: list[Box]) -> dict[int, list[dict[str, str | int | boo
 def get_box_by_id(db: Database, id: int) -> Box:
     return Box(db.teams.find_one({"_id": id}))
 
-def get_all_boxes(db: Database) -> list[Box]: 
-    boxes = []
+def get_all_boxes(db: Database) -> dict[str, Box]: 
+    boxes: dict[str, Box] = {}
     for box in db.boxes.find({}):
-        checks: list[Check] = [CHECK_MAP[key](**value) for check in box["checks"] for key, value in check.items()]
-        
-        boxes.append(Box(box["_id"], name=box["name"], ip=box["ip"], checks=checks))
+        checks: list[Check] = []
+        claims: dict[str, ClaimCheck] = {}
+        for check in box["checks"]:
+            for key, value in check.items():
+                check_obj = CHECK_MAP[key](**value)
+                if key == "claim":
+                    claims[check_obj.path] = check_obj
+                else:
+                    checks.append(check_obj)
+        box_obj = Box(box["_id"], name=box["name"], ip=box["ip"], checks=checks, claims=claims)
+        boxes[box_obj.name] = box_obj
     return boxes
 
 def get_all_claim_box_mapping(boxes: list[Box]) -> dict[int, ClaimCheck]:

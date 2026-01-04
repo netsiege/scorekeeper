@@ -20,7 +20,7 @@ class Game:
         self.db: Database = db
         self.round: Round = round
         self.teams: list[Team] = get_all_teams(self.db)
-        self.boxes: list[Box] = get_all_boxes(self.db)
+        self.boxes: dict[str, Box] = get_all_boxes(self.db)
         self.timeout = timeout
         self.interval = interval
         self.jitter = jitter
@@ -35,29 +35,10 @@ class Game:
         """Get pending tasks for a specific box."""
         return task_queue.get_tasks(hostname)
     
-    def process_claim(self, hostname: str, claim_data: dict) -> bool:
-        """
-        Process a claim submission and remove the task from the queue.
-        Returns True if task was successfully removed.
-        """
-        # Try to remove by file_path first (most specific)
-        file_path = claim_data.get('file_path') or claim_data.get('path')
-        if file_path:
-            removed = task_queue.remove_task_by_path(hostname, file_path)
-            if removed:
-                return True
-        
-        # Fall back to task type
-        task_type = claim_data.get('task_type') or claim_data.get('type')
-        if task_type:
-            removed = task_queue.remove_task_by_type(hostname, task_type)
-        else:
-            removed = task_queue.remove_task(hostname, 0)
-        return removed is not None
     
     def save_round(self) -> None:
         self.round.teams_to_save(self.teams)
-        self.round.boxes_to_save(self.boxes)
+        self.round.boxes_to_save(list(self.boxes.values()))
         self.round.update_db(self.db)
     
     def sync(self) -> None:
@@ -70,7 +51,7 @@ class Game:
     def update_db(self):
         for team in self.teams:
             team.update_db(self.db)
-        for box in self.boxes:
+        for box in self.boxes.values():
             box.update_db(self.db)
 
     def send_claims(self):
@@ -114,73 +95,72 @@ class Game:
                 return team._id
         return None
 
-    def award_claim_points(self, hostname: str, token: str, task: dict) -> tuple[int, int | None]:
+    def assign_box_team_id(self, hostname: str, token: str, file_path: str) -> int | None:
         """
-        Verify token and award points to a team based on a completed claim task.
+        Verify token and assign team_id to the corresponding ClaimCheck.
+        Points are awarded later in check_all_and_update.
         
         Args:
             hostname: The box hostname
             token: The team's token to verify
-            task: The task that was completed (contains value and owner fields)
+            file_path: The file path of the ClaimCheck to update
         
         Returns:
-            Tuple of (points_awarded, team_id) - team_id is None if token invalid
+            team_id if token is valid and check found, None otherwise
         """
         # Verify token first
         team_id = self.verify_token(token)
         if team_id is None:
             if DEBUG:
                 print(f"Invalid token: {token}")
-            return (0, None)
+            return None
         
-        value = task.get('value', 1)
-        is_owner = task.get('owner', False)
-        
-        # Check if services are up for this box before awarding points
-        box = next((b for b in self.boxes if b.name == hostname), None)
+        # Find the box by hostname - O(1) lookup
+        box = self.boxes.get(hostname)
         if not box:
             if DEBUG:
                 print(f"Box {hostname} not found")
-            return (0, team_id)
+            return None
         
-        # Verify services are running
-        services_up = all(
-            check.run(box.ip) for check in box.checks 
-            if not isinstance(check, ClaimCheck)
-        )
-        
-        if not services_up:
+        # Update claim team_id using the fast path lookup
+        if box.update_claim_by_path(file_path, team_id):
             if DEBUG:
-                print(f"Services not up for {hostname}, no points awarded")
-            return (0, team_id)
+                claim = box.get_claim_by_path(file_path)
+                print(f"Assigned team {team_id} to ClaimCheck {claim.name} on {hostname}")
+            return team_id
         
-        team = get_team_by_id(self.teams, team_id)
-        if not team:
-            if DEBUG:
-                print(f"Team {team_id} not found")
-            return (0, team_id)
-        
-        # Award points
-        team.modify_team_points(value)
         if DEBUG:
-            if is_owner:
-                print(f"Team {team_id} awarded {value} owner points for {hostname}")
-            else:
-                print(f"Team {team_id} awarded {value} points for {hostname}")
-        return (value, team_id)
+            print(f"No ClaimCheck found with path {file_path} on {hostname}")
+        return None
 
     def check_all_and_update(self):
-        """
-        Run all service checks (non-claim checks) for all boxes.
-        Claim points are now awarded via the /api/claim endpoint.
-        """
         if DEBUG:
-            print("Running all service checks")
-        for box in self.boxes:
+            print("Running all checks")
+        for box in self.boxes.values():
+            # Run service checks
+            services = 1
             for check in box.checks:
-                # Skip claim checks - they are handled via API
-                if not isinstance(check, ClaimCheck):
-                    check.run(box.ip)
+                services &= check.run(box.ip)
+            
+            # Process claims if services are up
+            if services:
+                team_update = {}
+                owner = tuple()
+                
+                for claim in box.claims.values():
+                    if claim.team_id != -1:
+                        if claim.owner:
+                            owner = (claim.team_id, claim.value)
+                        else:
+                            team_update[claim.team_id] = claim.value if claim.team_id not in team_update else team_update[claim.team_id] + claim.value
+                
+                if owner:
+                    team = get_team_by_id(self.teams, owner[0])
+                    team.modify_team_points(owner[1])
+                else:
+                    for team_id, value in team_update.items():
+                        team = get_team_by_id(self.teams, team_id)
+                        team.modify_team_points(value)
         
                     
 
