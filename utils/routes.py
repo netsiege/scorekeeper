@@ -3,6 +3,9 @@ from utils.task_queue import task_queue
 
 from flask import Blueprint, jsonify, request
 from flask_cors import CORS
+import jwt
+import os
+from datetime import datetime, timedelta
 
 def get_client_ip():
     """Get the actual TCP peer IP address."""
@@ -210,6 +213,83 @@ def create_engine_routes(game):
             return jsonify({"error": "Invalid box key"}), 401
         
         return jsonify(task_queue.get_all_queues())
+
+    @engine_routes.route("/api/team/auth", methods=['POST'])
+    def authenticate_team():
+        """Authenticate a team and return a JWT session token.
+        Body: JSON with:
+            - team_name: the team's name
+            - password: the team's password
+        Returns JWT token if credentials are valid.
+        """
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "JSON body is required"}), 400
+        
+        team_name = data.get('team_name')
+        password = data.get('password')
+        
+        if not team_name or not password:
+            return jsonify({"error": "team_name and password are required"}), 400
+        
+        # Find the team by name
+        team = None
+        for t in game.teams:
+            if t.name.lower() == team_name.lower():
+                team = t
+                break
+        
+        if not team:
+            return jsonify({"error": "Team not found"}), 404
+        
+        # Verify password
+        if team.password != password:
+            return jsonify({"error": "Invalid password"}), 401
+        
+        # Generate JWT session token with 1 hour expiration
+        secret_key = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-change-in-production')
+        payload = {
+            'team_id': team._id,
+            'team_name': team.name,
+            'iat': datetime.utcnow(),
+            'exp': datetime.utcnow() + timedelta(hours=1)
+        }
+        session_token = jwt.encode(payload, secret_key, algorithm='HS256')
+        
+        return jsonify({
+            "message": "Authentication successful",
+            "team_id": team._id,
+            "team_name": team.name,
+            "session_id": session_token,
+            "token": team.token,
+            "expires_in": 3600
+        }), 200
+
+    @engine_routes.route("/api/team/verify", methods=['GET'])
+    def verify_session():
+        """Verify JWT session token and return team info.
+        Header: Authorization: Bearer {jwt_token}
+        Returns team information if token is valid.
+        """
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({"error": "Authorization header with Bearer token is required"}), 401
+        
+        token = auth_header[7:]  # Remove 'Bearer ' prefix
+        
+        try:
+            secret_key = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-change-in-production')
+            payload = jwt.decode(token, secret_key, algorithms=['HS256'])
+            
+            return jsonify({
+                "valid": True,
+                "team_id": payload['team_id'],
+                "team_name": payload['team_name']
+            }), 200
+        except jwt.ExpiredSignatureError:
+            return jsonify({"error": "Token has expired"}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({"error": "Invalid token"}), 401
 
     return engine_routes
 

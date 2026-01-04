@@ -5,3 +5,4 @@ PyYAML==6.0.1
 requests==2.31.0
 paramiko==3.3.1
 mysql-connector-python==8.0.33
+PyJWT==2.8.1
