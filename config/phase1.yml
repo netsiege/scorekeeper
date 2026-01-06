@@ -1,107 +1,191 @@
 ---
 boxes:
-- name: hera
-  id: 1
-  ip: 10.77.77.54
-  checks:
-    - claim:
-        path: "/var/www/wordpress/claim.txt"
-        value: 1
-        name: "user"
-    - claim:
-        path: "/root/claim.txt"
-        value: 3
-        owner: True
-        name: "root"
-    - ssh:
-        name: ssh
-        regex: hera
-        command: hostname
-    - web:
-        name: web
-        regex: Olympus
-        port: 80
+  - name: solaris
+    id: 1
+    ip: 10.100.7.40
+    checks:
+      - claim:
+          path: "/home/solaris/ctrl.txt"
+          value: 1
+          name: "user"
+      - claim:
+          path: "/root/ctrl.txt"
+          value: 3
+          owner: true
+          name: "root"
+      - ssh:
+          name: ssh
+          regex: solaris
+          command: hostname
+      - web:
+          name: web
+          port: 80
 
-- name: hermes
-  id: 2
-  ip: 10.77.77.88
-  checks:
-    - claim:
-        path: "/home/ysree/claim.txt"
-        value: 1
-        name: "user"
-    - claim:
-        path: "/root/claim.txt"
-        value: 3
-        owner: True
-        name: "root"
-    - ssh:
-        name: ssh
-        regex: hermes
-        command: hostname
-    - web:
-        name: web
-        port: 80
+  - name: starfall
+    id: 2
+    ip: 10.100.7.43
+    checks:
+      - claim:
+          path: "/home/starfall/ctrl.txt"
+          value: 1
+          name: "user"
+      - claim:
+          path: "/opt/starfall/ctrl.txt"
+          value: 3
+          owner: true
+          name: "service"
+      - ssh:
+          name: ssh
+          regex: starfall
+          command: hostname
+      - web:
+          name: api
+          port: 5000
 
+  - name: forge
+    id: 3
+    ip: 10.100.7.44
+    checks:
+      - claim:
+          path: "/home/forge/ctrl.txt"
+          value: 1
+          name: "user"
+      - claim:
+          path: "/root/ctrl.txt"
+          value: 3
+          owner: true
+          name: "root"
+      - ssh:
+          name: ssh
+          regex: forge
+          command: hostname
+      - web:
+          name: git-http
+          port: 80
+      - web:
+          name: api
+          port: 4000
 
+  - name: pyre
+    id: 4
+    ip: 10.100.7.45
+    checks:
+      - claim:
+          path: "/home/pyre/ctrl.txt"
+          value: 1
+          name: "user"
+      - claim:
+          path: "/root/ctrl.txt"
+          value: 3
+          owner: true
+          name: "root"
+      - ssh:
+          name: ssh
+          regex: pyre
+          command: hostname
+      - web:
+          name: web
+          port: 80
 
-- name: hestia
-  id: 3
-  ip: 10.77.77.138
-  checks:
-    - claim:
-        path: "C:\\Users\\Administrator\\claim.txt"
-        value: 4
-        owner: 1
-        name: "root"
-    - claim:
-        path: "C:\\Users\\spina\\claim.txt"
-        value: 1
-        name: "user"
-    - rdp:
-        name: rdp
+  - name: helios
+    id: 5
+    ip: 10.100.7.41
+    checks:
+      - claim:
+          path: "C:\\Users\\helios\\ctrl.txt"
+          value: 1
+          name: "user"
+      - claim:
+          path: "C:\\Users\\Administrator\\ctrl.txt"
+          value: 4
+          owner: true
+          name: "admin"
+      - rdp:
+          name: rdp
 
+  - name: orbital
+    id: 6
+    ip: 10.100.7.42
+    checks:
+      - claim:
+          path: "C:\\Users\\orbital\\ctrl.txt"
+          value: 1
+          name: "user"
+      - claim:
+          path: "C:\\Users\\Administrator\\ctrl.txt"
+          value: 4
+          owner: true
+          name: "admin"
+      - rdp:
+          name: rdp
+      - smb:
+          name: smb
+          share: "public"
 
-- name: apollo
-  id: 4
-  ip: 192.168.220.95
-  checks:
-    - claim:
-        path: "/root/claim.txt"
-        value: 4
-        owner: True
-        name: "root"
-    - ssh:
-        name: ssh
-        regex: apollo
-        command: hostname
-    - web:
-        name: web
-        port: 8000
+  - name: ember
+    id: 7
+    ip: 10.100.7.46
+    checks:
+      - claim:
+          path: "C:\\Users\\ember\\ctrl.txt"
+          value: 1
+          name: "user"
+      - claim:
+          path: "C:\\Users\\Administrator\\ctrl.txt"
+          value: 4
+          owner: true
+          name: "admin"
+      - rdp:
+          name: rdp
+      - web:
+          name: iis
+          port: 80
+      - smb:
+          name: smb
+          share: "Scripts"
 
-- name: hades
-  id: 5
-  ip: 192.168.220.184
-  checks:
-    - claim:
-        path: "/root/claim.txt"
-        value: 4
-        owner: True
-        name: "root"
-    - ssh:
-        name: ssh
-        regex: hades
-        command: hostname
-    - mysql:
-        name: mysql
+  - name: crucible
+    id: 8
+    ip: 10.100.7.47
+    checks:
+      - claim:
+          path: "/home/crucible/ctrl.txt"
+          value: 1
+          name: "user"
+      - claim:
+          path: "/root/ctrl.txt"
+          value: 3
+          owner: true
+          name: "root"
+      - ssh:
+          name: ssh
+          regex: crucible
+          command: hostname
+      - web:
+          name: energy-projections
+          port: 8000
+
+  - name: inspire
+    id: 9
+    ip: 10.100.7.48
+    checks:
+      - claim:
+          path: "/home/inspire/ctrl.txt"
+          value: 1
+          name: "user"
+      - claim:
+          path: "/root/ctrl.txt"
+          value: 3
+          owner: true
+          name: "root"
+      - ssh:
+          name: ssh
+          regex: inspire
+          command: hostname
+      - web:
+          name: energy-heatmap
+          port: 80
 
 creds:
   default:
-    # root: Production-Tree-Guideline5
-    scoring_user: Timer-Fragile4-Drawing
-    # sysadmin:OlympusNeverFALL5!
-    # loscar:bestfriend
-    # spina:ZiPu8hIph3vo
-    # ysree:duqu3IfRunAv
-    # aselime:piKis4ufrocl
-    # candressa:w14C6ljeqath
+    scoring_user: Scoring123!
