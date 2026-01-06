@@ -5,6 +5,7 @@ from utils.checks.ssh import SSHCheck
 from utils.checks.rdp import RDPCheck
 from utils.checks.mysql import MySQLCheck
 from utils.checks.ftp import FTPCheck
+from utils.checks.smb import SMBCheck
 from utils.checks.custom.custom_charon import CustomCharonCheck
 
 from pymongo.database import Database
@@ -67,7 +68,7 @@ class Box:
 
 DEBUG = 1
 
-CHECK_MAP = {"web": WebCheck, "claim": ClaimCheck, "ssh": SSHCheck, "rdp": RDPCheck, "mysql": MySQLCheck, "ftp": FTPCheck, "charon": CustomCharonCheck}
+CHECK_MAP = {"web": WebCheck, "claim": ClaimCheck, "ssh": SSHCheck, "rdp": RDPCheck, "mysql": MySQLCheck, "ftp": FTPCheck, "smb": SMBCheck}
 
 # Create box
 def create_box(db: Database, box: Box) -> None:
