@@ -1,4 +1,3 @@
-from utils.db.boxes import get_all_checks, get_all_services
 from utils.task_queue import task_queue
 
 from flask import Blueprint, jsonify, request

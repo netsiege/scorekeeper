@@ -101,7 +101,7 @@ def get_all_services(boxes: dict[str, Box]) -> dict[int, dict[str, bool]]:
 
 def get_all_claims(boxes: dict[str, Box]) -> dict[int, dict[str, int]]:
     return {box._id: {path: claim.team_id for path, claim in box.claims.items()} for box in boxes.values()}
-def get_all_checks(boxes: dict[str, Box]) -> dict[int, list[dict[str, str | int | bool]]]:
+def get_all_services(boxes: dict[str, Box]) -> dict[int, list[dict[str, str | int | bool]]]:
     return {box._id: [service.__dict__ for service in box.services.values()] + [claim.__dict__ for claim in box.claims.values()] for box in boxes.values()}
 
 
@@ -113,13 +113,13 @@ def get_all_boxes(db: Database) -> dict[str, Box]:
     for box in db.boxes.find({}):
         services: dict[str, Service] = {}
         claims: dict[str, Claim] = {}
-        for check in box["checks"]:
-            for key, value in check.items():
-                check_obj = CHECK_MAP[key](**value)
-                if key == "claim":
-                    claims[check_obj.path] = check_obj
-                else:
-                    services[check_obj.name] = check_obj
+        for key,value in box["services"].items():
+            check_obj = CHECK_MAP[key](**value)
+            services[check_obj.name] = check_obj
+        for key,value in box["claims"].items():
+            claim = Claim(**value)
+            if key == "claim":
+                claims[claim.path] = claim
         box_obj = Box(box["_id"], name=box["name"], ip=box["ip"], services=services, claims=claims)
         boxes[box_obj.name] = box_obj
     return boxes
