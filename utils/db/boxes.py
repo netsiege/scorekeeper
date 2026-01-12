@@ -24,8 +24,8 @@ class Box:
             "_id": self._id,
             "name": self.name,
             "ip": self.ip,
-            "claims": {k: v.to_dict() for k, v in self.claims.items()},
-            "services": {k: v.to_dict() for k, v in self.services.items()}
+            "claims": {v.to_dict() for v in self.claims.values()},
+            "services": {v.to_dict() for v in self.services.values()}
         }
     
     def update_db(self, db: Database):
