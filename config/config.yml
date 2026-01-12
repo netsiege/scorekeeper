@@ -24,6 +24,7 @@ creds:
 
 
 event:
+    reset: false
     phase: 1
     name: "Netsiege 1"
     database:

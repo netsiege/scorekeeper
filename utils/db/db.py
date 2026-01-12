@@ -19,7 +19,7 @@ def initialize(config: dict) -> Database:
 
     db: Database = client["scorekeeper"]
     if "scorekeeper" in client.list_database_names():
-        if event["phase"] == 1:
+        if event["reset"] == True:
             client.drop_database("scorekeeper")
             create_teams_from_config(config,db)
         else:
