@@ -24,14 +24,12 @@ class Box:
             "_id": self._id,
             "name": self.name,
             "ip": self.ip,
-            "claims": {k: v for claim in self.claims for k, v in claim.to_dict().items()},
-            "services": {k: v for service in self.services for k, v in service.to_dict().items()}
+            "claims": {k: v for k, v in self.claims.items()},
+            "services": {k: v for k, v in self.services.items()}
         }
     
     def update_db(self, db: Database):
-        services = [x.to_dict() for x in self.services]
-        claims = [x.to_dict() for x in self.claims]
-        db.boxes.update_one({"_id": self._id}, {"$set": {"services": services, "claims": claims}})
+        db.boxes.update_one({"_id": self._id}, {"$set": {"services": self.services, "claims": self.claims}})
 
     def update_claim_by_name(self, name: str, team_id: int) -> bool:
         """Update a claim's team_id by claim name."""
