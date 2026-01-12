@@ -1,18 +1,13 @@
-from utils.checks.check import Check
+from utils.checks.service import Service
 import mysql.connector
 DEBUG = 1
 
 
-class MySQLCheck(Check):
+class MySQLCheck(Service):
     def __init__(self, name: str = "mysql", port: int=3306, credentials: dict = {}, cred_list: str = "default", last: bool = False):
         self.cred_list = cred_list
 
         super().__init__(name, port, last, credentials)
-
-
-    def to_dict(self):
-        return {"mysql": self.__dict__}
-    
 
     def run(self, ip: str, timeout: int = 5) -> bool:
         for username, password in self.credentials[self.cred_list].items(): 

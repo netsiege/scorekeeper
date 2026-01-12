@@ -1,11 +1,11 @@
-from utils.checks.check import Check
+from utils.checks.service import Service
 from smb.SMBConnection import SMBConnection
 import socket
 
 DEBUG = 1
 
 
-class SMBCheck(Check):
+class SMBCheck(Service):
     def __init__(self, name: str = "smb", port: int = 445, share: str = "", path: str = "/", regex: str = "", credentials: dict = {}, cred_list: str = "default", last: bool = False):
         self.share = share
         self.path = path
@@ -13,10 +13,7 @@ class SMBCheck(Check):
         self.cred_list = cred_list
 
         super().__init__(name, port, last, credentials)
-    
-    def to_dict(self):
-        return {"smb": self.__dict__}
-    
+
 
     def run(self, ip: str, timeout: int = 5) -> bool:
         if DEBUG:

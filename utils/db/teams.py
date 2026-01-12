@@ -21,7 +21,7 @@ class Team:
     def modify_team_points(self, increment: int) -> None:
         self.points += increment
 
-    def to_dict_frontend(self):
+    def to_dict(self):
         keep = ["_id", "name", "points", "token"]
         return {key:getattr(self,key) for key in self.__dict__ if key in keep}
         # keep = ["name", "points", "token"]s

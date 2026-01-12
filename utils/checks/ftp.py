@@ -1,16 +1,14 @@
-from utils.checks.check import Check
+from utils.checks.service import Service
 from ftplib import FTP, error_perm
 DEBUG = 1
 
 
-class FTPCheck(Check):
+class FTPCheck(Service):
     def __init__(self, name: str = "ftp", port: int=21, command: str = "LIST", credentials: dict = {}, cred_list: str = "", last: bool = False):
         self.cred_list = cred_list
         self.command = command
         super().__init__(name, port, last, credentials)
-    
-    def to_dict(self):
-        return {"ftp": self.__dict__}
+
     
 
     def run(self, ip: str, timeout: int = 30) -> bool:
