@@ -67,7 +67,7 @@ class Game:
         
 
     def send_teams(self):
-        res = requests.post(f"{self.frontend}/update/teams", data=json.dumps([team.to_dict_frontend() for team in self.teams]), headers=self.headers)
+        res = requests.post(f"{self.frontend}/update/teams", data=json.dumps([team.to_dict() for team in self.teams]), headers=self.headers)
         if not res.ok:
             raise FrontendError("Could not send team data to frontend")
 
