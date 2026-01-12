@@ -27,27 +27,28 @@ class SMBCheck(Check):
                 if DEBUG:
                     print(f"Attempting to connect to SMB as {username} on {ip}")
                 
-                # Create SMB connection
+                # Resolve to IPv4 explicitly to avoid EAFNOSUPPORT (Errno 97)
+                try:
+                    ipv4 = socket.getaddrinfo(ip, None, family=socket.AF_INET)[0][4][0]
+                except Exception:
+                    ipv4 = ip  # assume already an IPv4 literal
+
+                # Create SMB connection (direct TCP)
                 conn = SMBConnection(
                     username,
                     password,
                     "scorekeeper",  # client machine name
-                    ip,             # server name
+                    ipv4,            # remote name
                     use_ntlm_v2=True,
-                    is_direct_tcp=True
+                    is_direct_tcp=True,
                 )
-                
-                # Connect to the server
-                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                sock.settimeout(timeout)
-                sock.connect((ip, self.port))
-                
-                connected = conn.connect(sock, ip, self.port)
+
+                # Let pysmb manage the TCP socket and force IPv4
+                connected = conn.connect(ipv4, self.port, timeout=timeout, sock_family=socket.AF_INET)
                 
                 if not connected:
                     if DEBUG:
                         print(f"Failed to authenticate as {username}")
-                    sock.close()
                     continue
                 
                 if DEBUG:
@@ -87,7 +88,6 @@ class SMBCheck(Check):
                         self.last = False
                 
                 conn.close()
-                sock.close()
                 
                 if not self.last:
                     if DEBUG:
