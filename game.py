@@ -2,7 +2,7 @@ from utils.db.round import Round
 from pymongo.database import Database
 from utils.db.teams import get_all_teams, rotate_all_team_tokens, get_team_by_id, get_team_token_mapping, get_team_points_mapping, Team
 from utils.db.boxes import get_all_boxes, get_all_claims, get_all_services, Box
-from utils.checks.claim import ClaimCheck
+from utils.checks.claim import Claim
 from utils.task_queue import task_queue
 import requests
 import json
@@ -97,13 +97,13 @@ class Game:
 
     def assign_box_team_id(self, hostname: str, token: str, file_path: str) -> int | None:
         """
-        Verify token and assign team_id to the corresponding ClaimCheck.
+        Verify token and assign team_id to the corresponding Claim.
         Points are awarded later in check_all_and_update.
         
         Args:
             hostname: The box hostname
             token: The team's token to verify
-            file_path: The file path of the ClaimCheck to update
+            file_path: The file path of the Claim to update
         
         Returns:
             team_id if token is valid and check found, None otherwise
@@ -126,11 +126,11 @@ class Game:
         if box.update_claim_by_path(file_path, team_id):
             if DEBUG:
                 claim = box.get_claim_by_path(file_path)
-                print(f"Assigned team {team_id} to ClaimCheck {claim.name} on {hostname}")
+                print(f"Assigned team {team_id} to Claim {claim.name} on {hostname}")
             return team_id
         
         if DEBUG:
-            print(f"No ClaimCheck found with path {file_path} on {hostname}")
+            print(f"No Claim found with path {file_path} on {hostname}")
         return None
 
     def check_all_and_update(self):
@@ -139,8 +139,8 @@ class Game:
         for box in self.boxes.values():
             # Run service checks
             services = 1
-            for check in box.checks:
-                services &= check.run(box.ip)
+            for service in box.services.values():
+                services &= service.run(box.ip)
             
             # Process claims if services are up
             if services:

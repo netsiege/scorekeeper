@@ -1,6 +1,4 @@
-from utils.checks.service import Check
 from utils.db.teams import Team
-import socket
 
 DEBUG = 1
 
