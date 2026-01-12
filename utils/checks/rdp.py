@@ -20,6 +20,7 @@ class RDPCheck(Service):
     def run(self, ip: str, timeout: int = 10) -> bool:
         if DEBUG:
             print(f"Running rdp check for {self.name} on {ip}")
+            print(self.credentials)
         try:
             for username, password in self.credentials[self.cred_list].items():
                 if DEBUG:
