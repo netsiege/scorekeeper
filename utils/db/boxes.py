@@ -123,8 +123,7 @@ def get_all_boxes(db: Database) -> dict[str, Box]:
             services[check_obj.name] = check_obj
         for key,value in box["claims"].items():
             claim = Claim(**value)
-            if key == "claim":
-                claims[claim.path] = claim
+            claims[claim.path] = claim
         box_obj = Box(box["_id"], name=box["name"], ip=box["ip"], services=services, claims=claims)
         boxes[box_obj.name] = box_obj
     return boxes
