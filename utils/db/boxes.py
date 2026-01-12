@@ -20,12 +20,18 @@ class Box:
         self.claims: dict[str, Claim] = claims if claims is not None else {}
 
     def to_dict(self):
+        claims_dict = {}
+        for v in self.claims.values():
+            claims_dict.update(v.to_dict())
+        services_dict = {}
+        for v in self.services.values():
+            services_dict.update(v.to_dict())
         return {
             "_id": self._id,
             "name": self.name,
             "ip": self.ip,
-            "claims": {v.to_dict() for v in self.claims.values()},
-            "services": {v.to_dict() for v in self.services.values()}
+            "claims": claims_dict,
+            "services": services_dict
         }
     
     def update_db(self, db: Database):
@@ -34,7 +40,7 @@ class Box:
 
     def update_claim_by_name(self, name: str, team_id: int) -> bool:
         """Update a claim's team_id by claim name."""
-        for claim in self.claims:
+        for claim in self.claims.values():
             if claim.name == name:
                 claim.team_id = team_id
                 return True
@@ -42,7 +48,7 @@ class Box:
 
     def update_claim_by_path(self, path: str, team_id: int) -> bool:
         """Update a claim's team_id by path (O(1) lookup)."""
-        for claim in self.claims:
+        for claim in self.claims.values():
             if claim.path == path:
                 claim.team_id = team_id
                 return True
@@ -80,11 +86,12 @@ def parse_box_config(config: dict) -> dict[str, Box]:
         claims: dict[str, Claim] = {}
         for check in entry["checks"]:
             for key, value in check.items():
-                check_obj = CHECK_MAP[key](**(value), credentials=config["creds"])
-                if key == "claim":
-                    claims[check_obj.path] = check_obj
-                else:
+                if key != "claim":
+                    check_obj = CHECK_MAP[key](**(value), credentials=config["creds"])
                     services[check_obj.name] = check_obj
+                else:
+                    claim= Claim(**(value))
+                    claims[claim.path] = claim
         box = Box(entry["id"], name=entry["name"], ip=entry["ip"], services=services, claims=claims)
         boxes[box.name] = box
     return boxes
@@ -101,8 +108,6 @@ def get_all_services(boxes: dict[str, Box]) -> dict[int, dict[str, bool]]:
 
 def get_all_claims(boxes: dict[str, Box]) -> dict[int, dict[str, int]]:
     return {box._id: {path: claim.team_id for path, claim in box.claims.items()} for box in boxes.values()}
-def get_all_services(boxes: dict[str, Box]) -> dict[int, list[dict[str, str | int | bool]]]:
-    return {box._id: [service.__dict__ for service in box.services.values()] + [claim.__dict__ for claim in box.claims.values()] for box in boxes.values()}
 
 
 def get_box_by_id(db: Database, id: int) -> Box:
