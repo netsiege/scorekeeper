@@ -5,7 +5,9 @@ class Service:
         self.last = last
         self.credentials = credentials
     def to_dict(self):
-        return {self.name: self.__dict__}
+        data = self.__dict__.copy()
+        data.pop('credentials', None)
+        return {self.name: data}
     def run(self, ip: str) -> bool:
         pass
         
