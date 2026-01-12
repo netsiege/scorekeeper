@@ -1,11 +1,14 @@
 
 teams:
-- name: team1
+- name: canopy
   id: 1
-  password: password
-- name: team2
+  password: 6pMAUz1N
+- name: harmony
   id: 2
-  password: password
+  password: dFMVxYA4
+- name: steel
+  id: 3
+  password: PhF7ffPZ
 
 creds:
   default:
