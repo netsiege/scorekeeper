@@ -142,29 +142,27 @@ def create_engine_routes(game):
         if not task_queue.has_tasks(hostname):
             return jsonify({"error": "No tasks available in queue for this box"}), 400
         
-        # Remove task by name
+        # Get the name to find the task
         name = claim_data.get('name')
-        removed_task = None
-        if name:
-            removed_task = task_queue.remove_task_by_name(hostname, name)
-            if not removed_task:
-                return jsonify({"error": f"No task found with name: {name}"}), 400
-        else:
+        if not name:
             return jsonify({"error": "name is required in claim data"}), 400
         
+        # Remove task by name (regardless of token validity)
+        removed_task = task_queue.remove_task_by_name(hostname, name)
+        if not removed_task:
+            return jsonify({"error": f"No task found with name: {name}"}), 400
+        
+        # Verify token and assign team_id after removing task
         token = claim_data.get('file_content')
         if not token:
             return jsonify({"error": "token is required in claim data"}), 400
-        team_id = None
-        check_id = None
-        if removed_task:
-            # Verify token and assign team_id to the claim
-            file_path = removed_task.get('file_path')
-            team_id = game.assign_box_team_id(hostname, token, file_path)
-            if team_id is None:
-                return jsonify({"error": "Invalid token"}), 401
-            
-            check_id = f"{hostname}_{file_path}"
+        
+        file_path = removed_task.get('file_path')
+        team_id = game.assign_box_team_id(hostname, token, file_path)
+        if team_id is None:
+            return jsonify({"error": "Invalid token"}), 401
+        
+        check_id = f"{hostname}_{file_path}"
         
         response = {
             "message": "Claim submitted successfully",
