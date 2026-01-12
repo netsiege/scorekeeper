@@ -34,20 +34,20 @@ event:
       username: admin
       password: password
     checks:
-      timeout: 2
-      interval: 2
-      jitter: 1
+      timeout: 15
+      interval: 200
+      jitter: 20
     frontend:
       endpoint: http://127.0.0.1:3000
     tasks:
       owner:
-        interval: 3
+        interval: 30
         jitter: 6
       non_owner:
-        interval: 3
+        interval: 30
         jitter: 6
       rotate_key:
-        interval: 3
+        interval: 30
         jitter: 6
     phases:
       - config/phase1.yml
