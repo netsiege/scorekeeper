@@ -19,8 +19,6 @@ DEBUG = 1
 
 def main(game: Game):
     while True:
-        time.sleep(game.interval + random.randrange(game.jitter))
-
         game.check_all_and_update()
         game.rotate_team_tokens()
         print([team.__dict__ for team in game.teams])
@@ -38,6 +36,8 @@ def main(game: Game):
         except:
             print("Cannot connect to frontend")
             pass
+        time.sleep(game.interval + random.randrange(game.jitter))
+
 
 def web():
     app.run(host="0.0.0.0", debug=True, port=8000, use_reloader=False)
