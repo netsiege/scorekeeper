@@ -201,6 +201,17 @@ class TaskQueue:
                         return True
         return False
     
+    def remove_task_by_name(self, hostname: str, name: str) -> Optional[dict]:
+        """Remove a task with a specific name from a box's queue."""
+        with self._lock:
+            if hostname in self._queues:
+                for key in list(self._queues[hostname]):
+                    task = _key_to_task(key)
+                    if task.get("name") == name:
+                        self._queues[hostname].discard(key)
+                        return task
+        return None
+    
     def remove_task_by_type(self, hostname: str, task_type: str) -> Optional[dict]:
         """Remove the first task of a specific type from a box's queue."""
         with self._lock:
@@ -208,17 +219,6 @@ class TaskQueue:
                 for key in list(self._queues[hostname]):
                     task = _key_to_task(key)
                     if task.get("type") == task_type:
-                        self._queues[hostname].discard(key)
-                        return task
-        return None
-    
-    def remove_task_by_path(self, hostname: str, file_path: str) -> Optional[dict]:
-        """Remove a task with a specific file_path from a box's queue."""
-        with self._lock:
-            if hostname in self._queues:
-                for key in list(self._queues[hostname]):
-                    task = _key_to_task(key)
-                    if task.get("file_path") == file_path:
                         self._queues[hostname].discard(key)
                         return task
         return None

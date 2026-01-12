@@ -51,8 +51,8 @@ class TaskScheduler:
                     
                 for hostname in hostnames:
                     queue_func(hostname, task_type)
-                    if DEBUG:
-                        print(f"[TaskScheduler] Queued all {task_type} tasks for {hostname}")
+                if DEBUG:
+                    print(f"[TaskScheduler] Queued all {task_type} tasks for all boxes")
         
         thread = threading.Thread(target=scheduler_loop, daemon=True, name=f"scheduler_{task_type}")
         self._threads.append(thread)

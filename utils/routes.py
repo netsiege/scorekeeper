@@ -146,25 +146,15 @@ def create_engine_routes(game):
         if not task_queue.has_tasks(hostname):
             return jsonify({"error": "No tasks available in queue for this box"}), 400
         
-        # Try to remove by file_path first (most specific)
-        file_path = claim_data.get('file_path') or claim_data.get('path')
+        # Remove task by name
+        name = claim_data.get('name')
         removed_task = None
-        if file_path:
-            removed_task = task_queue.remove_task_by_path(hostname, file_path)
+        if name:
+            removed_task = task_queue.remove_task_by_name(hostname, name)
             if not removed_task:
-                return jsonify({"error": f"No task found with file_path: {file_path}"}), 400
-        
-        # Fall back to task type if not removed by path
-        if not removed_task:
-            task_type = claim_data.get('task_type') or claim_data.get('type')
-            if task_type:
-                # Verify task type exists before attempting to remove
-                if not task_queue.task_type_exists(hostname, task_type):
-                    return jsonify({"error": f"No task found with type: {task_type}"}), 400
-                removed_task = task_queue.remove_task_by_type(hostname, task_type)
-            else:
-                # If no type specified, remove the first task
-                removed_task = task_queue.remove_task(hostname, 0)
+                return jsonify({"error": f"No task found with name: {name}"}), 400
+        else:
+            return jsonify({"error": "name is required in claim data"}), 400
         
         team_id = None
         check_id = None
