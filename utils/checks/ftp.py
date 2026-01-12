@@ -9,7 +9,10 @@ class FTPCheck(Service):
         self.command = command
         super().__init__(name, port, last, credentials)
 
-    
+    def to_dict(self):
+        data = self.__dict__.copy()
+        data.pop('credentials', None)
+        return {"ftp": data}
 
     def run(self, ip: str, timeout: int = 30) -> bool:
         try:
@@ -18,7 +21,7 @@ class FTPCheck(Service):
             ftp.connect(ip, self.port, timeout=timeout)
             
             if self.cred_list:
-                for username, password in self.credentials[self.cred_list].items():
+                for username, password in self.credentials.get(self.cred_list, {}).items():
                     ftp.connect(user=username, passwd=password)
                     if DEBUG:
                         print(f"Connected to {ip} as {username}")

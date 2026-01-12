@@ -12,6 +12,11 @@ class RDPCheck(Service):
 
         super().__init__(name, port, last, credentials)
     
+    def to_dict(self):
+        data = self.__dict__.copy()
+        data.pop('credentials', None)
+        return {"rdp": data}
+    
     def run(self, ip: str, timeout: int = 10) -> bool:
         if DEBUG:
             print(f"Running rdp check for {self.name} on {ip}")

@@ -8,7 +8,11 @@ class MySQLCheck(Service):
         self.cred_list = cred_list
 
         super().__init__(name, port, last, credentials)
-
+    def to_dict(self):
+        data = self.__dict__.copy()
+        data.pop('credentials', None)
+        return {"mysql": data}
+    
     def run(self, ip: str, timeout: int = 5) -> bool:
         for username, password in self.credentials[self.cred_list].items(): 
             try:

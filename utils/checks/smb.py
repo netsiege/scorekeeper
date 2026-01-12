@@ -14,6 +14,10 @@ class SMBCheck(Service):
 
         super().__init__(name, port, last, credentials)
 
+    def to_dict(self):
+        data = self.__dict__.copy()
+        data.pop('credentials', None)
+        return {"smb": data}
 
     def run(self, ip: str, timeout: int = 5) -> bool:
         if DEBUG:

@@ -8,9 +8,13 @@ class WebCheck(Service):
         self.regex = regex
         self.path = path
 
-        super().__init__(name, port, last)
+        super().__init__(name, port, last, credentials)
     
-
+    def to_dict(self):
+        data = self.__dict__.copy()
+        data.pop('credentials', None)
+        return {"web": data}
+    
     def run(self, ip: str, timeout: int = 1) -> bool:
         url = f"http://{ip}:{self.port}{self.path}"
         if DEBUG:
