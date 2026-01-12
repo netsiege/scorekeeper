@@ -20,6 +20,9 @@ boxes:
       - web:
           name: web
           port: 80
+      - smb:
+          name: smb
+          share: "public"
 
   - name: starfall
     id: 2
@@ -42,50 +45,50 @@ boxes:
           name: api
           port: 5000
 
-  - name: forge
-    id: 3
-    ip: 10.100.7.44
-    checks:
-      - claim:
-          path: "/home/forge/ctrl.txt"
-          value: 1
-          name: "user"
-      - claim:
-          path: "/root/ctrl.txt"
-          value: 3
-          owner: true
-          name: "root"
-      - ssh:
-          name: ssh
-          regex: forge
-          command: hostname
-      - web:
-          name: git-http
-          port: 80
-      - web:
-          name: api
-          port: 4000
+#   - name: forge
+#     id: 3
+#     ip: 10.100.7.44
+#     checks:
+#       - claim:
+#           path: "/home/forge/ctrl.txt"
+#           value: 1
+#           name: "user"
+#       - claim:
+#           path: "/root/ctrl.txt"
+#           value: 3
+#           owner: true
+#           name: "root"
+#       - ssh:
+#           name: ssh
+#           regex: forge
+#           command: hostname
+#       - web:
+#           name: git-http
+#           port: 80
+#       - web:
+#           name: api
+#           port: 4000
 
-  - name: pyre
-    id: 4
-    ip: 10.100.7.45
-    checks:
-      - claim:
-          path: "/home/pyre/ctrl.txt"
-          value: 1
-          name: "user"
-      - claim:
-          path: "/root/ctrl.txt"
-          value: 3
-          owner: true
-          name: "root"
-      - ssh:
-          name: ssh
-          regex: pyre
-          command: hostname
-      - web:
-          name: web
-          port: 80
+#   - name: pyre
+#     id: 4
+#     ip: 10.100.7.45
+#     checks:
+#       - claim:
+#           path: "/home/pyre/ctrl.txt"
+#           value: 1
+#           name: "user"
+#       - claim:
+#           path: "/root/ctrl.txt"
+#           value: 3
+#           owner: true
+#           name: "root"
+#       - ssh:
+#           name: ssh
+#           regex: pyre
+#           command: hostname
+#       - web:
+#           name: web
+#           port: 80
 
   - name: helios
     id: 5
@@ -122,69 +125,69 @@ boxes:
           name: smb
           share: "public"
 
-  - name: ember
-    id: 7
-    ip: 10.100.7.46
-    checks:
-      - claim:
-          path: "C:\\Users\\ember\\ctrl.txt"
-          value: 1
-          name: "user"
-      - claim:
-          path: "C:\\Users\\Administrator\\ctrl.txt"
-          value: 4
-          owner: true
-          name: "admin"
-      - rdp:
-          name: rdp
-      - web:
-          name: iis
-          port: 80
-      - smb:
-          name: smb
-          share: "Scripts"
+#   - name: ember
+#     id: 7
+#     ip: 10.100.7.46
+#     checks:
+#       - claim:
+#           path: "C:\\Users\\ember\\ctrl.txt"
+#           value: 1
+#           name: "user"
+#       - claim:
+#           path: "C:\\Users\\Administrator\\ctrl.txt"
+#           value: 4
+#           owner: true
+#           name: "admin"
+#       - rdp:
+#           name: rdp
+#       - web:
+#           name: iis
+#           port: 80
+#       - smb:
+#           name: smb
+#           share: "Scripts"
 
-  - name: crucible
-    id: 8
-    ip: 10.100.7.47
-    checks:
-      - claim:
-          path: "/home/crucible/ctrl.txt"
-          value: 1
-          name: "user"
-      - claim:
-          path: "/root/ctrl.txt"
-          value: 3
-          owner: true
-          name: "root"
-      - ssh:
-          name: ssh
-          regex: crucible
-          command: hostname
-      - web:
-          name: energy-projections
-          port: 8000
+#   - name: crucible
+#     id: 8
+#     ip: 10.100.7.47
+#     checks:
+#       - claim:
+#           path: "/home/crucible/ctrl.txt"
+#           value: 1
+#           name: "user"
+#       - claim:
+#           path: "/root/ctrl.txt"
+#           value: 3
+#           owner: true
+#           name: "root"
+#       - ssh:
+#           name: ssh
+#           regex: crucible
+#           command: hostname
+#       - web:
+#           name: energy-projections
+#           port: 8000
 
-  - name: inspire
-    id: 9
-    ip: 10.100.7.48
-    checks:
-      - claim:
-          path: "/home/inspire/ctrl.txt"
-          value: 1
-          name: "user"
-      - claim:
-          path: "/root/ctrl.txt"
-          value: 3
-          owner: true
-          name: "root"
-      - ssh:
-          name: ssh
-          regex: inspire
-          command: hostname
-      - web:
-          name: energy-heatmap
-          port: 80
+#   - name: inspire
+#     id: 9
+#     ip: 10.100.7.48
+#     checks:
+#       - claim:
+#           path: "/home/inspire/ctrl.txt"
+#           value: 1
+#           name: "user"
+#       - claim:
+#           path: "/root/ctrl.txt"
+#           value: 3
+#           owner: true
+#           name: "root"
+#       - ssh:
+#           name: ssh
+#           regex: inspire
+#           command: hostname
+#       - web:
+#           name: energy-heatmap
+#           port: 80
 
 creds:
   default:
