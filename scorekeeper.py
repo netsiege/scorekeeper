@@ -33,8 +33,8 @@ def main(game: Game):
             # game.send_tokens()
             # game.send_points()
             game.send_teams()
-        except:
-            print("Cannot connect to frontend")
+        except Exception as e:
+            print("Cannot connect to frontend", e)
             pass
         time.sleep(game.interval + random.randrange(game.jitter))
 
