@@ -138,10 +138,6 @@ def create_engine_routes(game):
         if not claim_data:
             return jsonify({"error": "claim data is required in request body"}), 400
         
-        token = claim_data.get('file_content')
-        if not token:
-            return jsonify({"error": "token is required in claim data"}), 400
-        
         # Check if there are any tasks in the queue before processing
         if not task_queue.has_tasks(hostname):
             return jsonify({"error": "No tasks available in queue for this box"}), 400
@@ -156,6 +152,9 @@ def create_engine_routes(game):
         else:
             return jsonify({"error": "name is required in claim data"}), 400
         
+        token = claim_data.get('file_content')
+        if not token:
+            return jsonify({"error": "token is required in claim data"}), 400
         team_id = None
         check_id = None
         if removed_task:
