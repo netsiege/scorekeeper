@@ -60,7 +60,6 @@ class Game:
             raise FrontendError("Could not send claim data to the frontend")
 
     def send_services(self):
-        print(get_all_services(self.boxes))
         res = requests.post(f"{self.frontend}/update/services", data=json.dumps(get_all_services(self.boxes)), headers=self.headers)
         if not res.ok:
             raise FrontendError("Could not send service data to the frontend")
