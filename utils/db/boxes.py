@@ -65,6 +65,11 @@ class Box:
                 return claim
         return None
 
+    def reset_all_claims(self) -> None:
+        """Reset all claims' team_id back to -1."""
+        for claim in self.claims.values():
+            claim.team_id = -1
+
 DEBUG = 1
 
 CHECK_MAP = {"web": WebCheck, "claim": Claim, "ssh": SSHCheck, "rdp": RDPCheck, "mysql": MySQLCheck, "ftp": FTPCheck, "smb": SMBCheck}

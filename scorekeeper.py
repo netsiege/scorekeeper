@@ -71,6 +71,14 @@ if __name__ == "__main__":
     game.update_db()
     game.save_round()
 
+    # Reset all claims if flag is set
+    if event.get("reset_all_claims", False):
+        game.reset_all_claims()
+        game.update_db()
+        game.save_round()
+        if DEBUG:
+            print("Event flag 'reset_all_claims' is True - reset all claim team IDs")
+
     # Start task schedulers for automatic task queuing
     hostnames = [box.name for box in game.boxes.values()]
     task_scheduler.start_all(
