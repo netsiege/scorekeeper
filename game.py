@@ -124,6 +124,13 @@ class Game:
             print(f"No Claim found with path {file_path} on {hostname}")
         return None
 
+    def reset_all_claims(self) -> None:
+        """Reset all claims' team_id back to -1."""
+        for box in self.boxes.values():
+            box.reset_all_claims()
+        if DEBUG:
+            print("Reset all claims team_id to -1")
+
     def check_all_and_update(self):
         if DEBUG:
             print("Running all checks")
