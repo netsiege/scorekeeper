@@ -25,6 +25,7 @@ creds:
 
 event:
     reset: false
+    reset_all_claims: false
     phase: 1
     name: "Netsiege 1"
     database:
