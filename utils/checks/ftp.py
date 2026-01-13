@@ -11,7 +11,7 @@ class FTPCheck(Service):
 
     def to_dict(self):
         data = self.__dict__.copy()
-        data.pop('credentials', None)
+        # data.pop('credentials', None)
         return {"ftp": data}
 
     def run(self, ip: str, timeout: int = 30) -> bool:

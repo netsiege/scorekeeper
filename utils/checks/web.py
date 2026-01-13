@@ -12,7 +12,7 @@ class WebCheck(Service):
     
     def to_dict(self):
         data = self.__dict__.copy()
-        data.pop('credentials', None)
+        # data.pop('credentials', None)
         return {"web": data}
     
     def run(self, ip: str, timeout: int = 1) -> bool:

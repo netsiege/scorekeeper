@@ -14,7 +14,7 @@ class RDPCheck(Service):
     
     def to_dict(self):
         data = self.__dict__.copy()
-        data.pop('credentials', None)
+        # data.pop('credentials', None)
         return {"rdp": data}
     
     def run(self, ip: str, timeout: int = 10) -> bool:
