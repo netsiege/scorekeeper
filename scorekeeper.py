@@ -33,14 +33,14 @@ def main(game: Game):
             # game.send_tokens()
             # game.send_points()
             game.send_teams()
-        except:
-            print("Cannot connect to frontend")
+        except Exception as e:
+            print("Cannot connect to frontend", e)
             pass
         time.sleep(game.interval + random.randrange(game.jitter))
 
 
 def web():
-    app.run(host="0.0.0.0", debug=True, port=8000, use_reloader=False)
+    app.run(host="0.0.0.0", debug=False, port=8000, use_reloader=False)
 
 if __name__ == "__main__":
     app = Flask(__name__)

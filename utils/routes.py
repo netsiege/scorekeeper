@@ -1,4 +1,3 @@
-from utils.db.boxes import get_all_checks, get_all_services
 from utils.task_queue import task_queue
 
 from flask import Blueprint, jsonify, request
@@ -16,12 +15,11 @@ def create_engine_routes(game):
 
     @engine_routes.route("/api/boxes", methods=['GET'])
     def boxes():
-        return jsonify([box.to_dict_frontend() for box in game.boxes.values()])
+        return jsonify([box.to_dict() for box in game.boxes.values()])
     
     @engine_routes.route("/api/teams", methods=['GET'])
     def teams():
-        return jsonify([team.to_dict_frontend() for team in game.teams])
-
+        return jsonify([team.to_dict() for team in game.teams])
     @engine_routes.route("/api/tasks", methods=['GET'])
     def get_tasks():
         """Get all pending tasks for the client's box based on their IP.

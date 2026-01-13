@@ -1,5 +1,5 @@
 
-from utils.checks.check import Check
+from utils.checks.service import Service
 import requests
 import paramiko
 import re
@@ -7,7 +7,7 @@ import re
 
 DEBUG = 1
 
-class SSHCheck(Check):
+class SSHCheck(Service):
     def __init__(self, name: str = "ssh", port: int=22, command: str="", regex: str="", credentials: dict = {}, cred_list: str="default", last: bool = False):
         self.command = command
         self.regex = regex
@@ -16,16 +16,17 @@ class SSHCheck(Check):
         super().__init__(name, port, last, credentials)
     
     def to_dict(self):
-        return {"ssh": self.__dict__}
+        data = self.__dict__.copy()
+        # data.pop('credentials', None)
+        return {"ssh": data}
     
-
     def run(self, ip: str, timeout: int = 1) -> bool:
         if DEBUG:
             print(f"Running ssh check for {self.name} on {ip}")
         client = paramiko.client.SSHClient()
         try:
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            for username, password in self.credentials[self.cred_list].items():
+            for username, password in self.credentials.get(self.cred_list, {}).items():
                 if DEBUG:
                     print(f"Attempting to connect to user {username} using password {password} on {ip}")
                 client.connect(ip, username=username, password=password, timeout=timeout)

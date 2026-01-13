@@ -1,17 +1,18 @@
-from utils.checks.check import Check
+from utils.checks.service import Service
 from ftplib import FTP, error_perm
 DEBUG = 1
 
 
-class FTPCheck(Check):
+class FTPCheck(Service):
     def __init__(self, name: str = "ftp", port: int=21, command: str = "LIST", credentials: dict = {}, cred_list: str = "", last: bool = False):
         self.cred_list = cred_list
         self.command = command
         super().__init__(name, port, last, credentials)
-    
+
     def to_dict(self):
-        return {"ftp": self.__dict__}
-    
+        data = self.__dict__.copy()
+        # data.pop('credentials', None)
+        return {"ftp": data}
 
     def run(self, ip: str, timeout: int = 30) -> bool:
         try:
@@ -20,7 +21,7 @@ class FTPCheck(Check):
             ftp.connect(ip, self.port, timeout=timeout)
             
             if self.cred_list:
-                for username, password in self.credentials[self.cred_list].items():
+                for username, password in self.credentials.get(self.cred_list, {}).items():
                     ftp.connect(user=username, passwd=password)
                     if DEBUG:
                         print(f"Connected to {ip} as {username}")
