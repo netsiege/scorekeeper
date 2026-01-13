@@ -21,14 +21,14 @@ def initialize(config: dict) -> Database:
     if "scorekeeper" in client.list_database_names():
         if event["reset"] == True:
             client.drop_database("scorekeeper")
-            create_teams_from_config(config,db)
-        else:
-            db.boxes.drop()
-    # Initialize database
+            create_teams_from_config(config, db)
+            create_boxes_from_config(phase_config, db)
+        # Otherwise, keep existing data - don't drop boxes
+    # Initialize database if it doesn't exist
     else:
-    # Create teams from config
+        # Create teams from config
         create_teams_from_config(config, db)
-    create_boxes_from_config(phase_config, db)
+        create_boxes_from_config(phase_config, db)
 
     if DEBUG:
         print(f"Successfully created collections: {', '.join(db.list_collection_names())}")
